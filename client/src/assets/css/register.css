@@ -1,0 +1,118 @@
+.register-page-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fff 0%, #a18aff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.register-flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.register-welcome {
+  flex: 1;
+  text-align: left;
+  color: #2c2178;
+  padding-left: 12px;
+}
+.register-welcome h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+.register-welcome p {
+  font-size: 1.08rem;
+  color: #222;
+  margin-bottom: 0;
+}
+.register-form {
+  flex: 1;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(108,99,255,0.10);
+  padding: 32px 28px 24px 28px;
+  min-width: 340px;
+  max-width: 370px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border: 2px solid #d1d5db;
+}
+.register-title {
+  color: #6c63ff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+  text-align: left;
+}
+.register-input {
+  border: 1.5px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+  width: 100%;
+  margin-left: -10px;
+}
+.register-input:focus {
+  border: 1.5px solid #6c63ff;
+}
+.register-btn-register {
+  text-align: center;
+  background: #6c63ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 12px 0;
+}
+.register-btn-register:hover {
+  background: #5548c8;
+}
+.register-switch {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 0.98rem;
+}
+.register-link {
+  color: #6c63ff;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 2px;
+}
+.register-link:hover {
+  text-decoration: underline;
+}
+@media (max-width: 900px) {
+  .register-flex {
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+  }
+  .register-welcome {
+    text-align: center;
+    padding-left: 0;
+  }
+}
+
+.register-error {
+  color: #e74c3c;
+  background: #fff0f0;
+  border: 1px solid #e74c3c;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 0.98rem;
+  text-align: center;
+}

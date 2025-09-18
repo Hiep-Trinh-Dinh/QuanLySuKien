@@ -1,0 +1,126 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+
+.navbar-menu-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.08rem;
+  color: #222;
+  cursor: pointer;
+  padding: 0 28px;
+  height: 100%;
+  min-height: 56px;
+  transition: color 0.2s, background 0.2s;
+  background: transparent;
+}
+
+.navbar-menu-link:hover {
+  color: #6c63ff;
+  background: #f3f0ff;
+}
+
+.navbar-menu {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.navbar-menu li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.08rem;
+  color: #222;
+  cursor: pointer;
+  padding: 0 28px;
+  height: 100%;
+  min-height: 56px;
+  transition: color 0.2s, background 0.2s;
+  background: transparent;
+}
+
+.navbar-menu li:hover, .navbar-menu li.active {
+  color: #6c63ff;
+  background: #f3f0ff;
+}
+
+.login-btn-link {
+  text-decoration: none;
+}
+
+.login-btn {
+  background: #fff;
+  color: #6c63ff;
+  border: 2px solid #6c63ff;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  margin-right: 30px;
+}
+.login-btn:hover {
+  background:#5548c8;
+  color: #f3f0ff;
+}
+
+.navbar-right {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.avatar-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  margin-right: 16px;
+}
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.user-menu {
+  position: absolute;
+  right: 12px;
+  top: 52px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  min-width: 180px;
+  z-index: 50;
+}
+.user-name {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.logout-btn {
+  width: 100%;
+  background: #fff;
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.logout-btn:hover {
+  background: #fee2e2;
+}
