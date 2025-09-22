@@ -1,0 +1,109 @@
+.support-wrapper {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 15px;
+}
+.breadcrumb .active {
+  font-weight: bold;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.subtitle {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+/* Form tổng */
+.support-form {
+  display: flex;
+  flex-direction: column; /* ép tất cả phần con xuống hàng */
+  gap: 30px; /* khoảng cách giữa các section */
+}
+
+/* Mỗi section */
+.form-section {
+  width: 100%;
+  display: block;
+}
+.form-section h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+/* Form group */
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+textarea {
+  min-height: 100px;
+}
+
+/* Buttons */
+.form-actions {
+  display: flex;
+  gap: 12px; /* khoảng cách rõ hơn */
+  margin-top: 10px;
+}
+
+.btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.btn.primary {
+  background: #6c5ce7;
+  color: #fff;
+}
+.btn.primary:hover {
+  background: #5a4bd1;
+}
+
+.btn.back {
+  background: #b2bec3; /* xám đậm */
+  color: #2d3436;
+}
+.btn.back:hover {
+  background: #636e72;
+  color: #fff;
+}
+
+/* Quick support buttons */
+.quick-support {
+  margin-top: 40px;
+  padding: 20px;
+  background: #e7e7f8;
+  border-radius: 8px;
+}
+
+.quick-support .btn {
+  margin-right: 15px; /* tách xa 2 nút */
+}
