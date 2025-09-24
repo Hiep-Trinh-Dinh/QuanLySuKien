@@ -21,19 +21,19 @@
         <h3 v-else-if="activeTab==='past'">Lịch sử</h3>
         <h3 v-else>Đã hủy</h3>
 
-        <TicketCard 
-          v-for="(ticket, index) in filteredTickets" 
-          :key="index"
-          :date="ticket.date"
-          :title="ticket.title"
-          :location="ticket.location"
-          :tickets="ticket.tickets"
-          :image="ticket.image"
-          @click="selectTicket(ticket)"
-        />
-
-
-
+  <TicketCard
+  v-for="(ticket, index) in filteredTickets" 
+  :key="index"
+  :id="ticket.id"
+  :date="ticket.date"
+  :title="ticket.title"
+  :location="ticket.location"
+  :tickets="ticket.tickets"
+  :price="ticket.price"
+  :status="ticket.status"
+  :image="ticket.image"
+  @click="selectTicket(ticket)"
+/>
 
         <!-- Ticket Details -->
         <div v-if="selectedTicket" class="ticket-details">
@@ -78,6 +78,7 @@
   // Data mẫu
   const tickets = ref([
     {
+      id: 1,
       date: "Dec 15, 2023 • 8:00 PM",
       title: "Summer Music Festival",
       location: "Hanoi Opera House",
@@ -87,6 +88,7 @@
       status: "upcoming"
     },
     {
+      id: 2,
       date: "Jan 20, 2024 • 9:30 AM",
       title: "Tech Conference 2024",
       location: "National Convention Center",
@@ -96,6 +98,7 @@
       status: "past"
     },
     {
+      id: 3,
       date: "Nov 01, 2023 • 7:00 PM",
       title: "Autumn Gala",
       location: "HCM City Opera House",

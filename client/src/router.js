@@ -5,6 +5,9 @@ import LoginForm from './components/LoginForm.vue'
 import RegisterForm from './components/RegisterForm.vue'
 import MyTicket from './components/MyTicket.vue'
 import CustomerSupport from './components/CustomerSupport.vue'
+import TicketInformation from './components/TicketInformation.vue'
+
+
 const routes = [
   {
     path: '/',
@@ -15,6 +18,8 @@ const routes = [
       { path: '/register', name: 'Register', component: RegisterForm },
       { path: '/tickets', name: 'Tickets', component: MyTicket },
       { path: '/support', name: 'CustomerSupport', component: CustomerSupport },
+      { path: "/tickets/:id", name: "TicketInformation", component: TicketInformation, props: true }
+
     ]
   }
 ]
