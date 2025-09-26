@@ -1,0 +1,90 @@
+.event-review-bg {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #f8f8ff 0%, #a18cd1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-review-box {
+  background: #fff;
+  border: 2px solid #888;
+  border-radius: 14px;
+  padding: 28px 32px 22px 32px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+}
+
+
+.event-info {
+  font-size: 1rem;
+  margin-bottom: 18px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+.form-group {
+  margin-bottom: 10px;
+  display: flex;
+}
+
+
+input[type="text"],
+input[type="email"],
+textarea {
+  width: 50%;
+  padding: 7px 10px;
+  border: 1.5px solid #bbb;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+  background: #fafaff;
+  margin-bottom: 0;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+  border-color: #a18cd1;
+}
+
+.star-rating {
+  font-size: 1.5rem;
+  color: #bbb;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.star {
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.star.filled {
+  color: #ffb400;
+}
+
+.submit-btn {
+  width: 100%;
+  background: linear-gradient(90deg, #a18cd1 0%, #6b63ff 100%);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 7px;
+  padding: 11px 0;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(100, 100, 200, 0.08);
+}
+
+.submit-btn:hover {
+  background: linear-gradient(90deg, #6b63ff 0%, #a18cd1 100%);
+}
+
