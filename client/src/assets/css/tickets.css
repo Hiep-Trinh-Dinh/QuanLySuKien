@@ -1,0 +1,82 @@
+.tickets-content {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* Tabs */
+.ticket-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.ticket-tabs button {
+  padding: 8px 16px;
+  border: none;
+  background: #b1b3b5;
+  cursor: pointer;
+  border-radius: 20px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+.ticket-tabs button:hover {
+  background: #e5e7eb;
+}
+.ticket-tabs button.active {
+  background: #4f46e5;
+  color: white;
+}
+
+/* Search */
+.ticket-search {
+  width: 100%;
+  padding: 10px 14px;
+  margin: 15px 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+/* Ticket details card */
+.ticket-details {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+.ticket-details h3 {
+  margin-bottom: 12px;
+}
+.ticket-details li {
+  margin: 8px 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.ticket-details b {
+  display: inline-block;
+  width: 140px;
+  color: #333;
+}
+
+/* Buttons in details */
+.ticket-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+.ticket-buttons button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #4f46e5;
+  color: #fff;
+  transition: 0.3s;
+}
+.ticket-buttons button:hover {
+  background-color: #3730a3;
+}

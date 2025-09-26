@@ -4,7 +4,7 @@
       <ul class="navbar-menu">
         <router-link to="/" class="navbar-menu-link">Home</router-link>
         <li class="navbar-menu-item"> Events</li>
-        <li class="navbar-menu-item"> My Tickets</li>
+        <router-link to="/tickets" class="navbar-menu-link">My Tickets</router-link>
       </ul>
     </div>
     <div class="navbar-right">
