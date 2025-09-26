@@ -45,73 +45,97 @@ const userInfo = ref({
         <li class="nav-item" role="presentation">
           <button
             class="nav-link active"
-            id="pills-home-tab"
+            id="pills-overview-tab"
             data-bs-toggle="pill"
-            data-bs-target="#pills-home"
+            data-bs-target="#pills-overview"
             type="button"
             role="tab"
-            aria-controls="pills-home"
+            aria-controls="pills-overview"
             aria-selected="true"
           >
-            Home
+            Overview
           </button>
         </li>
         <li class="nav-item" role="presentation">
           <button
             class="nav-link"
-            id="pills-profile-tab"
+            id="pills-lineup-tab"
             data-bs-toggle="pill"
-            data-bs-target="#pills-profile"
+            data-bs-target="#pills-lineup"
             type="button"
             role="tab"
-            aria-controls="pills-profile"
+            aria-controls="pills-lineup"
             aria-selected="false"
           >
-            Profile
+            Lineup
           </button>
         </li>
         <li class="nav-item" role="presentation">
           <button
             class="nav-link"
-            id="pills-contact-tab"
+            id="pills-venues-tab"
             data-bs-toggle="pill"
-            data-bs-target="#pills-contact"
+            data-bs-target="#pills-venues"
             type="button"
             role="tab"
-            aria-controls="pills-contact"
+            aria-controls="pills-venues"
             aria-selected="false"
           >
-            Contact
+            Venues
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="pills-reviews-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-reviews"
+            type="button"
+            role="tab"
+            aria-controls="pills-reviews"
+            aria-selected="false"
+          >
+            Reviews
           </button>
         </li>
       </ul>
+
       <div class="tab-content" id="pills-tabContent">
         <div
           class="tab-pane fade show active"
-          id="pills-home"
+          id="pills-overview"
           role="tabpanel"
-          aria-labelledby="pills-home-tab"
+          aria-labelledby="pills-overview-tab"
           tabindex="0"
         >
-          ...
+          Overview content
         </div>
         <div
           class="tab-pane fade"
-          id="pills-profile"
+          id="pills-lineup"
           role="tabpanel"
-          aria-labelledby="pills-profile-tab"
+          aria-labelledby="pills-lineup-tab"
           tabindex="0"
         >
-          ...
+          Lineup content
         </div>
         <div
           class="tab-pane fade"
-          id="pills-contact"
+          id="pills-venues"
           role="tabpanel"
-          aria-labelledby="pills-contact-tab"
+          aria-labelledby="pills-venues-tab"
           tabindex="0"
         >
-          ...
+          Venues content
+        </div>
+        <div
+          class="tab-pane fade"
+          id="pills-reviews"
+          role="tabpanel"
+          aria-labelledby="pills-reviews-tab"
+          tabindex="0"
+        >
+          Reviews content
         </div>
       </div>
     </div>
@@ -172,6 +196,62 @@ const userInfo = ref({
   .dynamic-bg {
     height: 150px;
     font-size: 2rem;
+  }
+}
+
+/* Wrapper */
+.ms-2.mt-2 {
+  margin-left: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Nav pills */
+.nav-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.nav-pills .nav-link {
+  background-color: #f5f5f5; /* màu nền bình thường */
+  color: #333;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.nav-pills .nav-link:hover {
+  background-color: #e0e0e0;
+  color: #0d6efd;
+}
+
+.nav-pills .nav-link.active {
+  background-color: #0d6efd; /* màu active */
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(13, 110, 253, 0.4);
+}
+
+/* Tab content */
+.tab-content {
+  margin-top: 15px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #fff;
+  color: #333;
+  min-height: 100px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive cho mobile */
+@media (max-width: 600px) {
+  .nav-pills .nav-link {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
+  .tab-content {
+    padding: 10px;
   }
 }
 </style>
