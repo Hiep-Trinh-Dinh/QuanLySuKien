@@ -1,11 +1,11 @@
-.login-page-bg {
+.loginpage-bg {
   min-height: 100vh;
   background: linear-gradient(135deg, #fff 0%, #a18aff 100%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.login-flex {
+.loginpage-flex {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,24 +14,24 @@
   max-width: 900px;
   margin: 0 auto;
 }
-.login-welcome {
+.loginpage-welcome {
   flex: 1;
   text-align: left;
   color: #2c2178;
   padding-left: 12px;
 }
-.login-welcome h2 {
+.loginpage-welcome-title {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 12px;
   line-height: 1.2;
 }
-.login-welcome p {
+.loginpage-welcome-desc {
   font-size: 1.08rem;
   color: #222;
   margin-bottom: 0;
 }
-.login-form {
+.loginpage-form {
   flex: 1;
   background: #fff;
   border-radius: 16px;
@@ -44,14 +44,14 @@
   align-items: stretch;
   border: 2px solid #d1d5db;
 }
-.login-title {
+.loginpage-title {
   color: #6c63ff;
   font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 18px;
   text-align: left;
 }
-.login-input {
+.loginpage-input {
   border: 1.5px solid #d1d5db;
   border-radius: 6px;
   padding: 10px 12px;
@@ -62,32 +62,26 @@
   transition: border 0.2s;
   width: 100%;
 }
-.login-input:focus {
+.loginpage-input:focus {
   border: 1.5px solid #6c63ff;
 }
-
-.login-options {
+.loginpage-options {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
-  width: 100%;
+  gap: 8px;
+  margin-bottom: 16px;
+  margin-left: 2px;
 }
-.login-remember-me {
-  font-size: 0.98rem;
-  color: #444;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: fit-content;
+.loginpage-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #6c63ff;
+  margin: 0;
 }
-.login-remember-me input {
-  width: 50%;
-}
-.login-remember-label {
+.loginpage-remember-label {
   color: #6c63ff;
   font-size: 0.98rem;
   margin-left: 4px;
-  width: 200%;
 }
 
 .login-btn-login {
@@ -100,9 +94,10 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
+  margin-top: 8px;
+  padding: 10px 0;
 }
-
-.login-btn-login:hover {
+.loginpage-btn-login:hover {
   background: #5548c8;
 }
 .login-divider {
@@ -133,28 +128,27 @@
   margin-top: 8px;
   font-size: 0.98rem;
 }
-.login-link {
+.loginpage-link {
   color: #6c63ff;
   text-decoration: none;
   font-weight: 500;
   margin-left: 2px;
 }
-.login-link:hover {
+.loginpage-link:hover {
   text-decoration: underline;
 }
 @media (max-width: 900px) {
-  .login-flex {
+  .loginpage-flex {
     flex-direction: column;
     gap: 24px;
     align-items: center;
   }
-  .login-welcome {
+  .loginpage-welcome {
     text-align: center;
     padding-left: 0;
   }
 }
-
-.login-error {
+.loginpage-error {
   color: #e74c3c;
   background: #fff0f0;
   border: 1px solid #e74c3c;
