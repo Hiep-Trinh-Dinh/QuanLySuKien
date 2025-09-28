@@ -32,10 +32,7 @@ form {
   display: flex;
 }
 
-
-input[type="text"],
-input[type="email"],
-textarea {
+.eventreview-input {
   width: 50%;
   padding: 7px 10px;
   border: 1.5px solid #bbb;
@@ -46,10 +43,21 @@ textarea {
   background: #fafaff;
   margin-bottom: 0;
 }
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-textarea:focus {
+.eventreview-input:focus {
+  border-color: #a18cd1;
+}
+.eventreview-textarea {
+  width: 50%;
+  padding: 7px 10px;
+  border: 1.5px solid #bbb;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+  background: #fafaff;
+  margin-bottom: 0;
+}
+.eventreview-textarea:focus {
   border-color: #a18cd1;
 }
 
@@ -69,7 +77,7 @@ textarea:focus {
   color: #ffb400;
 }
 
-.submit-btn {
+.eventreview-btn {
   width: 100%;
   background: linear-gradient(90deg, #a18cd1 0%, #6b63ff 100%);
   color: #fff;
@@ -83,8 +91,7 @@ textarea:focus {
   transition: background 0.2s;
   box-shadow: 0 2px 8px rgba(100, 100, 200, 0.08);
 }
-
-.submit-btn:hover {
+.eventreview-btn:hover {
   background: linear-gradient(90deg, #6b63ff 0%, #a18cd1 100%);
 }
 

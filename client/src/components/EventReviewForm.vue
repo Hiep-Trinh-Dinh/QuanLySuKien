@@ -22,21 +22,21 @@
             </div>
             <div class="form-group">
               <label>Họ tên:</label>
-              <input type="text" v-model="name" required />
+              <input type="text" v-model="name" required class="eventreview-input" />
             </div>
             <div class="form-group">
               <label>Email:</label>
-              <input type="email" v-model="email" required />
+              <input type="email" v-model="email" required class="eventreview-input" />
             </div>
             <div class="form-group">
               <label>Số điện thoại:</label>
-              <input type="text" v-model="phone" required />
+              <input type="text" v-model="phone" required class="eventreview-input" />
             </div>
             <div class="form-group">
               <label>Nhận xét (Nếu có):</label>
-              <textarea v-model="comment" rows="2"></textarea>
+              <textarea v-model="comment" rows="2" class="eventreview-textarea"></textarea>
             </div>
-            <button type="submit" class="submit-btn">Gửi</button>
+            <button type="submit" class="submit-btn eventreview-btn">Gửi</button>
           </form>
         </div>
       </div>

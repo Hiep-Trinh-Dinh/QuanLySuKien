@@ -57,7 +57,7 @@
   background: #f5f1ff;
   box-shadow: 0 4px 16px rgba(124, 58, 237, 0.08);
 }
-.ticket-type input[type="radio"] {
+.ticketpur-radio {
   accent-color: #7c3aed;
   width: 20px;
   height: 20px;
@@ -142,7 +142,7 @@
   margin-top: 12px;
   margin-bottom: 18px;
 }
-.ticket-pay-btn {
+.ticketpur-btn {
   width: 100%;
   background: linear-gradient(90deg, #7c3aed 0%, #6b63ff 100%);
   color: #fff;
@@ -155,7 +155,7 @@
   margin-top: 8px;
   transition: background 0.2s;
 }
-.ticket-pay-btn:hover {
+.ticketpur-btn:hover {
   background: linear-gradient(90deg, #6b63ff 0%, #7c3aed 100%);
 }
 @media (max-width: 900px) {

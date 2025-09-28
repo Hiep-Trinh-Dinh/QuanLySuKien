@@ -10,7 +10,7 @@
           <div class="ticket-section-title">Chọn loại vé</div>
           <div class="ticket-type-list">
             <label>
-              <input type="radio" value="standard" />
+              <input type="radio" value="standard" class="ticketpur-radio" />
               <div class="ticket-type-content">
                 <div class="ticket-type-name">Vé tiêu chuẩn</div>
                 <div class="ticket-type-desc">Vé vào cửa chung với quyền tham dự tất cả các buổi biểu diễn</div>
@@ -18,7 +18,7 @@
               </div>
             </label>
             <label>
-              <input type="radio" value="vip" />
+              <input type="radio" value="vip" class="ticketpur-radio" />
               <div class="ticket-type-content">
                 <div class="ticket-type-name">Vé VIP</div>
                 <div class="ticket-type-desc">Ghế ngồi cao cấp, quyền lui tới phòng chờ riêng và gặp gỡ nghệ sĩ</div>
@@ -51,7 +51,7 @@
             <span>Tổng</span>
             <span>100000 VND</span>
           </div>
-          <button class="ticket-pay-btn">Tiếp tục để thanh toán</button>
+          <button class="ticket-pay-btn ticketpur-btn">Tiếp tục để thanh toán</button>
         </div>
       </div>
     </div>

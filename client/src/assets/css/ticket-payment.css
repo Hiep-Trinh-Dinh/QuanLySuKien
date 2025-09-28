@@ -185,8 +185,7 @@
   margin-bottom: 4px;
   font-size: 1rem;
 }
-input[type="text"],
-input[type="email"] {
+.ticketpay-input {
   width: 100%;
   padding: 8px 12px;
   border: 1.5px solid #bbb;
@@ -196,8 +195,7 @@ input[type="email"] {
   transition: border 0.2s;
   background: #fafaff;
 }
-input[type="text"]:focus,
-input[type="email"]:focus {
+.ticketpay-input:focus {
   border-color: #6c5ce7;
 }
 .payment-method-list {
@@ -226,7 +224,7 @@ input[type="email"]:focus {
   height: 18px;
   margin-right: 12px;
 }
-.complete-btn {
+.ticketpay-btn {
   width: 100%;
   background: linear-gradient(90deg, #6c5ce7 0%, #a18cd1 100%);
   color: #fff;
@@ -239,7 +237,7 @@ input[type="email"]:focus {
   margin-top: 10px;
   transition: background 0.2s;
 }
-.complete-btn:hover {
+.ticketpay-btn:hover {
   background: linear-gradient(90deg, #a18cd1 0%, #6c5ce7 100%);
 }
 .secure-note {

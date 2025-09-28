@@ -67,34 +67,34 @@
           <div class="contact-title">Thông tin liên lạc</div>
           <div class="form-group">
             <label>Họ và tên</label>
-            <input type="text" v-model="name" placeholder="Nhập đầy đủ họ tên của bạn" />
+            <input type="text" v-model="name" placeholder="Nhập đầy đủ họ tên của bạn" class="ticketpay-input" />
           </div>
           <div class="form-group">
             <label>Email</label>
-            <input type="email" v-model="email" placeholder="Nhập Email của bạn" />
+            <input type="email" v-model="email" placeholder="Nhập Email của bạn" class="ticketpay-input" />
           </div>
           <div class="form-group">
             <label>Số điện thoại</label>
-            <input type="text" v-model="phone" placeholder="Nhập số điện thoại của bạn" />
+            <input type="text" v-model="phone" placeholder="Nhập số điện thoại của bạn" class="ticketpay-input" />
           </div>
           <div class="form-group">
             <label>Phương thức thanh toán</label>
             <div class="payment-method-list">
               <label :class="['payment-method', paymentMethod==='credit' ? 'active' : '']">
-                <input type="radio" value="credit" v-model="paymentMethod" />
+                <input type="radio" value="credit" v-model="paymentMethod" class="ticketpay-radio" />
                 <span>Thẻ tín dụng</span>
               </label>
               <label :class="['payment-method', paymentMethod==='bank' ? 'active' : '']">
-                <input type="radio" value="bank" v-model="paymentMethod" />
+                <input type="radio" value="bank" v-model="paymentMethod" class="ticketpay-radio" />
                 <span>Chuyển khoản ngân hàng</span>
               </label>
               <label :class="['payment-method', paymentMethod==='wallet' ? 'active' : '']">
-                <input type="radio" value="wallet" v-model="paymentMethod" />
+                <input type="radio" value="wallet" v-model="paymentMethod" class="ticketpay-radio" />
                 <span>Digital Wallet</span>
               </label>
             </div>
           </div>
-          <button class="complete-btn">Hoàn thành</button>
+          <button class="complete-btn ticketpay-btn">Hoàn thành</button>
           <div class="secure-note">Thông tin thanh toán của bạn được bảo mật và mã hóa</div>
         </div>
       </div>
