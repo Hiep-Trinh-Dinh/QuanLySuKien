@@ -1,23 +1,30 @@
 <template>
   <div class="ticket-card">
-    <div 
-      class="ticket-image" 
-      :style="{ backgroundImage: `url(${image})` }">
-    </div>
+    <div
+      class="ticket-image"
+      :style="{ backgroundImage: `url(${image})` }"
+    ></div>
     <div class="ticket-content">
       <p class="ticket-date">{{ date }}</p>
       <h3 class="ticket-title">{{ title }}</h3>
       <p class="ticket-location">{{ location }} • {{ tickets }} Vé</p>
       <div class="ticket-actions">
-      <button class="btn view">Xem vé</button>
-      <button class="btn transfer" @click="$router.push({ name: 'TicketInformation', params: { id: id } })"> Thông tin</button>
+        <button class="btn view">Xem vé</button>
+        <button
+          class="btn transfer"
+          @click="
+            $router.push({ name: 'TicketInformation', params: { id: id } })
+          "
+        >
+          Thông tin
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from "vue-router"
+import { useRouter } from "vue-router";
 
 const props = defineProps({
   id: Number,
@@ -27,17 +34,14 @@ const props = defineProps({
   tickets: String,
   image: String,
   price: String,
-  status: String
-})
+  status: String,
+});
 
-const router = useRouter()
+const router = useRouter();
 const goToInfo = () => {
-  router.push({ name: "ticketInfo", params: { id: props.id } })
-}
-
+  router.push({ name: "ticketInfo", params: { id: props.id } });
+};
 </script>
-
-
 
 <style scoped>
 .ticket-card {
@@ -49,7 +53,7 @@ const goToInfo = () => {
   margin-bottom: 20px;
   position: relative;
   height: 160px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
   cursor: pointer;
   transition: transform 0.2s ease;
 }
@@ -103,7 +107,7 @@ const goToInfo = () => {
 }
 .btn.transfer {
   background-color: #eef2ff;
-  color: #4f46e5;
+  color: #3e36dd;
 }
 .btn:hover {
   opacity: 0.9;

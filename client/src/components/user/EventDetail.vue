@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import imgBackgroud from "../../../public/—Pngtree—a massive crowd of people_16139729.png";
+import imgBackgroud from "../../assets/img/—Pngtree—a massive crowd of people_16139729.png";
+import OverView from "./OverView.vue";
+import Lineup from "./Lineup.vue";
+import Review from "./Review.vue";
+import Venues from "./Venues.vue";
 
 // props nhận background URL
 // const props = defineProps<{
@@ -16,7 +20,8 @@ const bgStyle = computed(() => ({
 const userInfo = ref({
   name: "Võ Anh Tuấn",
   date: "October 05, 2025",
-  time: "2:00 PM",
+  timeStart: "2:00 PM",
+  timeEnd: "5:00 PM",
   place: "SGU Quận 5, Thành phố Hồ Chí Minh",
 });
 </script>
@@ -30,7 +35,7 @@ const userInfo = ref({
     <div>
       <ul class="horizontal-list">
         <li>{{ userInfo.date }}</li>
-        <li>{{ userInfo.time }}</li>
+        <li>{{ userInfo.timeStart }}</li>
         <li>{{ userInfo.place }}</li>
       </ul>
     </div>
@@ -81,7 +86,7 @@ const userInfo = ref({
             aria-controls="pills-venues"
             aria-selected="false"
           >
-            Venues
+            Venue
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -108,7 +113,7 @@ const userInfo = ref({
           aria-labelledby="pills-overview-tab"
           tabindex="0"
         >
-          Overview content
+          <OverView :user="userInfo" />
         </div>
         <div
           class="tab-pane fade"
@@ -117,7 +122,7 @@ const userInfo = ref({
           aria-labelledby="pills-lineup-tab"
           tabindex="0"
         >
-          Lineup content
+          <Lineup />
         </div>
         <div
           class="tab-pane fade"
@@ -126,7 +131,7 @@ const userInfo = ref({
           aria-labelledby="pills-venues-tab"
           tabindex="0"
         >
-          Venues content
+          <Venues />
         </div>
         <div
           class="tab-pane fade"
@@ -135,7 +140,7 @@ const userInfo = ref({
           aria-labelledby="pills-reviews-tab"
           tabindex="0"
         >
-          Reviews content
+          <Review />
         </div>
       </div>
     </div>
@@ -223,11 +228,11 @@ const userInfo = ref({
 
 .nav-pills .nav-link:hover {
   background-color: #e0e0e0;
-  color: #0d6efd;
+  color: #6b63ff;
 }
 
 .nav-pills .nav-link.active {
-  background-color: #0d6efd; /* màu active */
+  background-color: #6b63ff; /* màu active */
   color: #fff;
   box-shadow: 0 2px 6px rgba(13, 110, 253, 0.4);
 }

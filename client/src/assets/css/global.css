@@ -1,0 +1,17 @@
+.btn-buy {
+  border-radius: 10px !important;
+  background-color: #7c3aed !important;
+  color: white !important;
+}
+.btn-buy:hover {
+  background-color: #6631c1 !important;
+}
+.btn-share {
+  border-radius: 10px !important;
+  background-color: rgba(197, 196, 196, 0.663) !important ;
+  color: #7c3aed !important;
+  margin-left: 20px;
+}
+.btn-share:hover {
+  background-color: rgba(152, 151, 151, 0.663) !important ;
+}
