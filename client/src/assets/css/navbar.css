@@ -130,10 +130,7 @@
 .create-event-btn{
   background: #6c63ff;
   color: #fff;
-  border: none;
   border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
   height: 40px;

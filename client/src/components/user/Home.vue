@@ -13,23 +13,14 @@
     <!-- Thể loại -->
     <h5 class="mb-3">Thể loại</h5>
     <div class="row g-3 mb-5">
-        <div
-            v-for="category in categories"
-            :key="category.id"
-            class="col-6 col-md-3"
-        >
-            <div class="card text-left shadow-sm h-100 border-0">
-                <div class="card-body text-center">
-                    <div class="mb-2 fs-2 text-primary">
-                    <i :class="['bi', category.icon]"></i>
-                    </div>
-                    <h6 class="card-title">{{ category.name }}</h6>
-                    <p class="card-text small text-muted">{{ category.desc }}</p>
-                </div>
-            </div>
-        </div>
+      <div
+        v-for="category in categories"
+        :key="category.id"
+        class="col-6 col-md-3"
+      >
+        <CategoryCard :category="category" />
+      </div>
     </div>
-
 
     <!-- Sự kiện nổi bật -->
     <h5 class="mb-3">Sự kiện nổi bật</h5>
@@ -39,17 +30,7 @@
         :key="event.id"
         class="col-12 col-md-4"
       >
-        <div class="card shadow-sm h-100">
-          <img :src="event.image" class="card-img-top" alt="..." />
-          <div class="card-body">
-            <small class="text-muted d-block mb-2">
-              {{ event.date }} - {{ event.time }}
-            </small>
-            <h6 class="card-title">{{ event.title }}</h6>
-            <p class="card-text small text-muted">{{ event.location }}</p>
-            <button class="btn btn-primary btn-sm">Xem chi tiết</button>
-          </div>
-        </div>
+        <EventCard :event="event" />
       </div>
     </div>
 
@@ -73,6 +54,8 @@
 
 <script setup>
 import { ref } from "vue";
+import EventCard from "../card/EventCard.vue";
+import CategoryCard from "../card/CategoryCard.vue";
 
 const search = ref("");
 
@@ -83,7 +66,6 @@ const categories = ref([
   { id: 3, name: "Thể thao", desc: "Bóng đá, thể dục", icon: "bi-trophy-fill" },
   { id: 4, name: "Nghệ thuật", desc: "Triển lãm, biểu diễn", icon: "bi-palette-fill" },
 ]);
-
 
 // Sự kiện nổi bật
 const featuredEvents = ref([
@@ -109,7 +91,7 @@ const featuredEvents = ref([
     date: "Feb 5, 2024",
     time: "7:00 PM",
     location: "Sân vận động Mỹ Đình",
-    image: "https://via.placeholder.com/400x200?text=Football+Match",
+    image: "../src/assets/img/—Pngtree—a massive crowd of people_16139729.png",
   },
 ]);
 
@@ -139,5 +121,17 @@ const upcomingEvents = ref([
 <style>
 body {
   background-color: #f9f9f9;
+}
+
+.shadow-primary {
+  box-shadow: 0 .5rem 1rem rgba(13, 110, 253, 0.3) !important; /* xanh dương */
+}
+
+.shadow-success {
+  box-shadow: 0 .5rem 1rem rgba(25, 135, 84, 0.3) !important; /* xanh lá */
+}
+
+.shadow-danger {
+  box-shadow: 0 .5rem 1rem rgba(220, 53, 69, 0.3) !important; /* đỏ */
 }
 </style>
