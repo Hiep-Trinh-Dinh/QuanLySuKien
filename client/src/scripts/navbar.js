@@ -6,6 +6,7 @@ export default {
   data(){
     return {
       user: null,
+      admin: false,
       menuOpen: false,
     }
   },
@@ -35,12 +36,15 @@ export default {
     readUser(){
       const raw = localStorage.getItem('user')
       this.user = raw ? JSON.parse(raw) : null
+      // Đồng bộ trạng thái admin dựa vào role
+      this.admin = this.user && this.user.role === 'admin';
     },
     onAuthLogin(e){
-      this.user = e.detail?.user || this.user
+      this.readUser(); // Đọc lại user mới nhất từ localStorage mỗi lần nhận sự kiện đăng nhậ
     },
     onAuthLogout(){
       this.user = null
+      this.admin = false
     },
     onStorage(e){
       if (e.key === 'user') this.readUser()

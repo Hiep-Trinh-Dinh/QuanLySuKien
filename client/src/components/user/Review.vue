@@ -10,6 +10,7 @@ import {
   LinearScale,
 } from "chart.js";
 import { Bar } from "vue-chartjs";
+import router from "../../router";
 
 ChartJS.register(
   Title,
@@ -48,7 +49,7 @@ const chartOptions = {
 <template>
   <div class="d-flex justify-content-between">
     <h5>Đánh giá :({{ sum }})</h5>
-    <button class="btn btn-custom">Viết đánh giá</button>
+    <router-link to="/event-previewform" class="btn btn-custom">Viết đánh giá</router-link>
   </div>
   <div class="d-flex justify-content-center">
     <div class="w-75 h-50 text-center">

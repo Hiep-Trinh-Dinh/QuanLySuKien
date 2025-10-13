@@ -23,8 +23,8 @@ const pool = mysql.createPool({
 // POST /register
 app.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password)
+    const { username, email, password } = req.body;
+    if (!username || !email || !password)
       return res.status(400).json({ message: 'Vui lòng nhập đầy đủ thông tin.' });
 
     // Kiểm tra email đã tồn tại chưa
@@ -37,8 +37,8 @@ app.post('/register', async (req, res) => {
 
     // Lưu user mới
     await pool.query(
-      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-      [name, email, hash]
+      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+      [username, email, hash]
     );
 
     res.status(201).json({ message: 'Đăng ký thành công!' });
@@ -76,10 +76,31 @@ app.post('/login', async (req, res) => {
       token: token,
       user: {
         id: user.id,
-        name: user.name,
+        username: user.username,
         email: user.email
       }
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server. Vui lòng thử lại.' });
+  }
+});
+
+
+app.get('/events', async (req, res) => {
+  try {
+    const [events] = await pool.query(`
+      SELECT
+        e.*,
+        c.name as category_name,
+        v.name as venue_name,
+        v.address as venue_address
+      FROM events e
+      LEFT JOIN categories c ON e.category_id = c.id
+      LEFT JOIN venues v ON e.venue_id = v.id
+      ORDER BY e.start_time DESC
+      `);
+    res.json(events);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Lỗi server. Vui lòng thử lại.' });

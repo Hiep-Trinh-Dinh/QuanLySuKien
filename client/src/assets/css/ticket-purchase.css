@@ -3,11 +3,6 @@
   margin: 0 auto;
   padding: 32px 0 0 0;
 }
-.breadcrumb {
-  color: #888;
-  font-size: 15px;
-  margin-bottom: 18px;
-}
 .ticket-title {
   font-size: 2.2rem;
   font-weight: 700;
@@ -154,6 +149,9 @@
   cursor: pointer;
   margin-top: 8px;
   transition: background 0.2s;
+  text-decoration: none;
+  text-align: center;
+  display: block;
 }
 .ticketpur-btn:hover {
   background: linear-gradient(90deg, #6b63ff 0%, #7c3aed 100%);

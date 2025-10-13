@@ -7,7 +7,7 @@ const api = axios.create({
 })
 
 export function useAuth() {
-  const name = ref('')
+  const username = ref('')
   const email = ref('')
   const password = ref('')
   const confirmPassword = ref('')
@@ -18,7 +18,7 @@ export function useAuth() {
   async function register() {
     error.value = ''
     loading.value = true
-    if (!name.value || !email.value || !password.value || !confirmPassword.value) {
+    if (!username.value || !email.value || !password.value || !confirmPassword.value) {
       error.value = 'Vui lòng nhập đầy đủ thông tin.'
       loading.value = false
       return
@@ -30,7 +30,7 @@ export function useAuth() {
     }
     try {
       await api.post('/register', {
-        name: name.value,
+        username: username.value,
         email: email.value,
         password: password.value
       })
@@ -86,7 +86,7 @@ export function useAuth() {
   }
 
   return {
-    name,
+    username,
     email,
     password,
     confirmPassword,

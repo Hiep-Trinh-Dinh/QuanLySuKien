@@ -49,7 +49,7 @@
         <p class="card-text">
           Vé vào cửa chung với quyền tham dự tất cả các buổi biểu diễn
         </p>
-        <button class="btn btn-primary btn-custom">Mua vé</button>
+        <router-link to="/ticket-purchase" class="btn btn-primary btn-custom">Mua vé</router-link>
       </div>
     </div>
     <div class="card">
@@ -64,7 +64,7 @@
         <p class="card-text">
           Ghế ngồi cao cấp, quyền lui tới phòng chờ riêng và gặp gỡ nghệ sĩ
         </p>
-        <button class="btn btn-primary btn-custom">Mua vé</button>
+        <router-link to="/ticket-purchase" class="btn btn-primary btn-custom">Mua vé</router-link>
       </div>
     </div>
   </div>
@@ -136,6 +136,8 @@ export default {
 
 .btn-custom {
   background-color: #634aff;
+  text-decoration: none;
+
 }
 .btn-custom:hover {
   background-color: #5324e1;

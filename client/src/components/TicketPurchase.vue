@@ -1,8 +1,5 @@
 <template>
   <div class="ticket-purchase-wrapper">
-    <nav class="breadcrumb">
-      Sự kiện &gt; Summer Music Festival &gt; Mua vé
-    </nav>
     <h1 class="ticket-title">Mua vé</h1>
     <div class="ticket-main">
       <div class="ticket-left">
@@ -51,7 +48,7 @@
             <span>Tổng</span>
             <span>100000 VND</span>
           </div>
-          <button class="ticket-pay-btn ticketpur-btn">Tiếp tục để thanh toán</button>
+          <router-link to="/ticket-payment" class="ticketpur-btn">Tiếp tục để thanh toán</router-link>
         </div>
       </div>
     </div>

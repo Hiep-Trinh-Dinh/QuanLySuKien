@@ -9,30 +9,27 @@
     </div>
     <div class="navbar-right">
       <template v-if="user">
-        <div class="avatar-wrapper" @click="toggleMenu">
-          <img :src="userAvatar" alt="avatar" class="avatar" />
-        </div>
-        <div v-if="menuOpen" class="user-menu">
-          <div class="user-name">{{ user.name }}</div>
-          <button class="logout-btn" @click.stop="logout">Đăng xuất</button>
-        </div>
+        <template v-if="admin">
+          <div class="avatar-wrapper" @click="toggleMenu">
+            <button class="create-event-btn">Create Event</button>
+            <img :src="userAvatar" alt="avatar" class="avatar" />
+          </div>
+          <div v-if="menuOpen" class="user-menu">
+            <div class="user-name">{{ user.username }}</div>
+            <button class="logout-btn" @click.stop="logout">Đăng xuất</button>
+          </div>
+        </template>
+        <template v-else>
+          <div class="avatar-wrapper" @click="toggleMenu">
+            <img :src="userAvatar" alt="avatar" class="avatar" />
+          </div>
+          <div v-if="menuOpen" class="user-menu">
+            <div class="user-name">{{ user.username }}</div>
+            <button class="logout-btn" @click.stop="logout">Đăng xuất</button>
+          </div>
+        </template>
       </template>
-
-      <template v-if="admin">
-        <div class="avatar-wrapper" @click="toggleMenu">
-          <button class="create-event-btn">Create Event</button>
-          <img :src="userAvatar" alt="avatar" class="avatar" />
-        </div>
-        <div v-if="menuOpen" class="user-menu">
-          <div class="user-name">{{ user.name }}</div>
-          <button class="logout-btn" @click.stop="logout">Đăng xuất</button>
-        </div>
-      </template>
-
       <template v-else>
-        <router-link class="create-event-btn-link" to="/create-event">
-          <button class="create-event-btn">Create Event</button>
-        </router-link>
         <router-link class="login-btn-link" to="/login">
           <button class="login-btn">Đăng nhập</button>
         </router-link>

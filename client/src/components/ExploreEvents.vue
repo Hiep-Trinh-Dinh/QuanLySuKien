@@ -38,47 +38,27 @@
     <div class="explore-section explore-featured">
       <div class="explore-section-title">Sự kiện nổi bật</div>
       <div class="explore-featured-list">
-        <div class="explore-featured-card">
-          <div class="explore-featured-img" style="background-image:url('https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80')">
+        <div 
+          class="explore-featured-card" 
+          v-for="event in events.slice(0, 3)" :key="event.id"
+        >
+          <div 
+            class="explore-featured-img" 
+            :style="{
+              backgroundImage: event.image_url ? `url('${event.image_url}')` : `url('https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80')`
+            }"
+          >
             <div class="explore-featured-overlay">
               <div class="explore-featured-date-row">
                 <span class="explore-featured-date-icon">📅</span>
-                <span class="explore-featured-date">DEC 15</span>
+                <span class="explore-featured-date">
+                  {{ (new Date(event.start_time)).toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' }) }}
+                </span>
               </div>
               <div class="explore-featured-info">
-                <div class="explore-featured-name">Summer Music Festival</div>
-                <div class="explore-featured-meta">Hanoi Opera House • 8:00 PM</div>
-                <button class="explore-featured-btn">View Details</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="explore-featured-card">
-          <div class="explore-featured-img" style="background-image:url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80')">
-            <div class="explore-featured-overlay">
-              <div class="explore-featured-date-row">
-                <span class="explore-featured-date-icon">📅</span>
-                <span class="explore-featured-date">NOV 20</span>
-              </div>
-              <div class="explore-featured-info">
-                <div class="explore-featured-name">Hội nghị Công Nghệ 2025</div>
-                <div class="explore-featured-meta">National Convention Center • 9:00 AM</div>
-                <button class="explore-featured-btn">View Details</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="explore-featured-card">
-          <div class="explore-featured-img" style="background-image:url('https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80')">
-            <div class="explore-featured-overlay">
-              <div class="explore-featured-date-row">
-                <span class="explore-featured-date-icon">📅</span>
-                <span class="explore-featured-date">DEC 5</span>
-              </div>
-              <div class="explore-featured-info">
-                <div class="explore-featured-name">Giải vô địch bóng đá</div>
-                <div class="explore-featured-meta">Mỹ Đình National Stadium • 7:00 PM</div>
-                <button class="explore-featured-btn">View Details</button>
+                <div class="explore-featured-name">{{ event.title }}</div>
+                <div class="explore-featured-meta">{{ event.venue_name }} • {{ (new Date(event.start_time)).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}) }}</div>
+                <router-link :to="`/event-detail?id=${event.id}`" class="explore-featured-btn">View Details</router-link>
               </div>
             </div>
           </div>
@@ -145,7 +125,11 @@
 </template>
 
 <script setup>
-// Logic động sẽ thêm sau nếu cần
+import { ref, onMounted } from 'vue'
+import { fetchEvents } from '../scripts/ExploreEvents.js'
+
+const events = ref([])
+onMounted(() => fetchEvents(events))
 </script>
 
 <style src="../assets/css/explore-events.css"></style>

@@ -7,7 +7,7 @@
       </div>
       <form class="register-form" @submit.prevent="register">
         <h2 class="register-title">Đăng kí</h2>
-        <input class="register-input" type="text" placeholder="Nhập họ & tên" v-model="name" />
+        <input class="register-input" type="text" placeholder="Nhập họ & tên" v-model="username" />
         <input class="register-input" type="email" placeholder="Nhập địa chỉ email..." v-model="email" />
         <input class="register-input" type="password" placeholder="Mật khẩu..." v-model="password" />
         <input class="register-input" type="password" placeholder="Xác nhận mật khẩu..." v-model="confirmPassword" />
@@ -27,7 +27,7 @@
 import { useAuth } from '../scripts/useAuth.js'
 import '../assets/css/register.css'
 
-const { name, email, password, confirmPassword, error, loading, register } = useAuth()
+const { username, email, password, confirmPassword, error, loading, register } = useAuth()
 </script>
 
 
