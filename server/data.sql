@@ -95,7 +95,10 @@ CREATE TABLE event_lineup (
 CREATE TABLE reviews (
     id              INT AUTO_INCREMENT PRIMARY KEY,    -- Mã review (PK)
     event_id        INT NOT NULL,                      -- Sự kiện đánh giá (FK)
-    user_id         INT NOT NULL,                      -- Người đánh giá (FK)
+    user_id         INT,                      -- Người đánh giá (FK)
+    email           VARCHAR(100) NOT NULL UNIQUE,                     -- Email người đánh giá (nullable)
+    phone           VARCHAR(20),                      -- Số điện thoại người đánh giá (nullable)
+    name            VARCHAR(100),                      -- Tên người đánh giá (nullable)
     rating          INT CHECK (rating >= 1 AND rating <= 5), -- Số sao đánh giá (1-5)
     content         TEXT,                              -- Nội dung nhận xét
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,-- Ngày giờ tạo đánh giá

@@ -6,12 +6,17 @@
   justify-content: center;
 }
 
+.event-review-container{
+  margin-top: 20px;
+}
+
 .event-review-box {
   background: #fff;
   border: 2px solid #888;
   border-radius: 14px;
   padding: 28px 32px 22px 32px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  margin-bottom: 20px;
 }
 
 
@@ -33,7 +38,7 @@ form {
 }
 
 .eventreview-input {
-  width: 50%;
+  width: 95%;
   padding: 7px 10px;
   border: 1.5px solid #bbb;
   border-radius: 6px;
@@ -47,7 +52,7 @@ form {
   border-color: #a18cd1;
 }
 .eventreview-textarea {
-  width: 50%;
+  width: 95%;
   padding: 7px 10px;
   border: 1.5px solid #bbb;
   border-radius: 6px;

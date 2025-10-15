@@ -108,6 +108,18 @@ app.get('/events', async (req, res) => {
 });
 
 
+app.post('/event-review', async (req, res) => {
+  try {
+    const { event_id, user_id, rating, name, email, phone, comment } = req.body;
+    await pool.query('INSERT INTO reviews (event_id, user_id, rating, name, email, phone, content) VALUES (?, ?, ?, ?, ?, ?, ?)', [event_id, user_id, rating, name, email, phone, comment]);
+    res.json({ message: 'Đánh giá thành công!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server. Vui lòng thử lại.' });
+  }
+});
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
