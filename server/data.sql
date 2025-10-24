@@ -1,4 +1,8 @@
 -- =========================
+-- CHỌN DATABASE VÀ TẠO BẢNG
+-- =========================
+
+-- =========================
 -- BẢNG NGƯỜI DÙNG (User)
 -- =========================
 CREATE TABLE users (
@@ -60,7 +64,8 @@ CREATE TABLE tickets (
     id              INT AUTO_INCREMENT PRIMARY KEY,    -- Mã vé (PK)
     event_id        INT NOT NULL,                      -- Mã sự kiện (FK)
     user_id         INT,                               -- Người sở hữu (nullable, nếu chưa bán)
-    seat_number     VARCHAR(32),                       -- Số ghế (nếu quy định theo ghế)
+    seat_number     INT,                               -- Số ghế (nếu quy định theo ghế)
+    Type            ENUM('A','B','C') DEFAULT 'A',                 -- loai ve   
     price           DECIMAL(10,2) NOT NULL,            -- Giá vé
     status          ENUM('available','reserved','sold') DEFAULT 'available', -- Tình trạng vé: có sẵn, giữ chỗ, đã bán
     qr_code         VARCHAR(255),                      -- Mã QR cho vé điện tử

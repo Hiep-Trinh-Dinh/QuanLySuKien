@@ -1,6 +1,7 @@
 -- =========================
 -- DỮ LIỆU MẪU CHO HỆ THỐNG EVENT MANAGEMENT
 -- =========================
+USE vue_todo;
 
 -- Xóa dữ liệu cũ (nếu có)
 SET FOREIGN_KEY_CHECKS = 0;
@@ -18,12 +19,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- =========================
 -- 1. USERS (Người dùng)
 -- =========================
-INSERT INTO users (id, username, email, password, full_name, phone, role, status, created_at) VALUES
-(1, 'admin', 'admin@event.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin System', '0123456789', 'admin', 'active', NOW()),
-(2, 'john_doe', 'john@email.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John Doe', '0987654321', 'user', 'active', NOW()),
-(3, 'jane_smith', 'jane@email.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jane Smith', '0912345678', 'user', 'active', NOW()),
-(4, 'dinhhiep', 'dinhhiep@gmail.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Trịnh Đình Hiệp', '0977309945', 'user', 'active', NOW()),
-(5, 'event_manager', 'manager@event.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Event Manager', '0901234567', 'manager', 'active', NOW());
+INSERT INTO users (id, username, email, password, full_name, phone, role, created_at) VALUES
+(1, 'admin', 'admin@event.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin System', '0123456789', 'admin', NOW()),
+(2, 'john_doe', 'john@email.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John Doe', '0987654321', 'user', NOW()),
+(3, 'jane_smith', 'jane@email.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jane Smith', '0912345678', 'user', NOW()),
+(4, 'dinhhiep', 'dinhhiep@gmail.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Trịnh Đình Hiệp', '0977309945', 'user', NOW()),
+(5, 'event_manager', 'manager@event.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Event Manager', '0901234567', 'admin', NOW());
 
 -- =========================
 -- 2. CATEGORIES (Danh mục sự kiện)
@@ -72,34 +73,34 @@ INSERT INTO event_lineup (id, event_id, artist_id, artist_name, stage_name, perf
 -- =========================
 -- 6. TICKETS (Vé)
 -- =========================
-INSERT INTO tickets (id, event_id, user_id, seat_number, price, status, purchased_at) VALUES
+INSERT INTO tickets (id, event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES
 -- Event 1 - Summer Music Festival
-(1, 1, 2, 'VIP-001', 1200000, 'sold', '2024-06-01 10:00:00'),
-(2, 1, 2, 'VIP-002', 1200000, 'sold', '2024-06-01 10:00:00'),
-(3, 1, 3, 'STANDARD-001', 500000, 'sold', '2024-06-02 14:30:00'),
-(4, 1, 4, 'STANDARD-002', 500000, 'sold', '2024-06-03 09:15:00'),
-(5, 1, 4, 'STANDARD-003', 500000, 'sold', '2024-06-03 09:15:00'),
-(6, 1, NULL, 'STANDARD-004', 500000, 'available', NULL),
-(7, 1, NULL, 'STANDARD-005', 500000, 'available', NULL),
-(8, 1, NULL, 'VIP-003', 1200000, 'available', NULL),
+(1, 1, 2, 1, 'A', 1200000, 'sold', 'QR001', '2024-06-01 10:00:00'),
+(2, 1, 2, 2, 'A', 1200000, 'sold', 'QR002', '2024-06-01 10:00:00'),
+(3, 1, 3, 3, 'B', 500000, 'sold', 'QR003', '2024-06-02 14:30:00'),
+(4, 1, 4, 4, 'B', 500000, 'sold', 'QR004', '2024-06-03 09:15:00'),
+(5, 1, 4, 5, 'B', 500000, 'sold', 'QR005', '2024-06-03 09:15:00'),
+(6, 1, NULL, 6, 'B', 500000, 'available', NULL, NULL),
+(7, 1, NULL, 7, 'B', 500000, 'available', NULL, NULL),
+(8, 1, NULL, 8, 'A', 1200000, 'available', NULL, NULL),
 
 -- Event 2 - Tech Conference
-(9, 2, 2, 'EARLY-001', 300000, 'sold', '2024-07-01 11:00:00'),
-(10, 2, 3, 'EARLY-002', 300000, 'sold', '2024-07-02 16:45:00'),
-(11, 2, 4, 'EARLY-003', 300000, 'sold', '2024-07-03 13:20:00'),
-(12, 2, NULL, 'EARLY-004', 300000, 'available', NULL),
-(13, 2, NULL, 'EARLY-005', 300000, 'available', NULL),
+(9, 2, 2, 1, 'A', 300000, 'sold', 'QR009', '2024-07-01 11:00:00'),
+(10, 2, 3, 2, 'A', 300000, 'sold', 'QR010', '2024-07-02 16:45:00'),
+(11, 2, 4, 3, 'A', 300000, 'sold', 'QR011', '2024-07-03 13:20:00'),
+(12, 2, NULL, 4, 'A', 300000, 'available', NULL, NULL),
+(13, 2, NULL, 5, 'A', 300000, 'available', NULL, NULL),
 
 -- Event 3 - Football Championship
-(14, 3, 2, 'NORTH-001', 200000, 'sold', '2024-05-15 12:00:00'),
-(15, 3, 3, 'NORTH-002', 200000, 'sold', '2024-05-16 15:30:00'),
-(16, 3, 4, 'SOUTH-001', 200000, 'sold', '2024-05-17 10:15:00'),
+(14, 3, 2, 1, 'A', 200000, 'sold', 'QR014', '2024-05-15 12:00:00'),
+(15, 3, 3, 2, 'A', 200000, 'sold', 'QR015', '2024-05-16 15:30:00'),
+(16, 3, 4, 3, 'B', 200000, 'sold', 'QR016', '2024-05-17 10:15:00'),
 
 -- Event 4 - Art Exhibition
-(17, 4, 2, 'GENERAL-001', 100000, 'sold', '2024-08-01 09:00:00'),
-(18, 4, 3, 'GENERAL-002', 100000, 'sold', '2024-08-02 14:00:00'),
-(19, 4, NULL, 'GENERAL-003', 100000, 'available', NULL),
-(20, 4, NULL, 'GENERAL-004', 100000, 'available', NULL);
+(17, 4, 2, 1, 'C', 100000, 'sold', 'QR017', '2024-08-01 09:00:00'),
+(18, 4, 3, 2, 'C', 100000, 'sold', 'QR018', '2024-08-02 14:00:00'),
+(19, 4, NULL, 3, 'C', 100000, 'available', NULL, NULL),
+(20, 4, NULL, 4, 'C', 100000, 'available', NULL, NULL);
 
 -- =========================
 -- 7. PAYMENTS (Thanh toán)
@@ -137,12 +138,12 @@ INSERT INTO reviews (id, event_id, user_id, rating, name, email, phone, content,
 -- =========================
 -- 9. SUPPORT TICKETS (Ticket hỗ trợ)
 -- =========================
-INSERT INTO support_tickets (id, user_id, subject, message, status, admin_response, created_at, updated_at) VALUES
-(1, 2, 'Vấn đề về vé', 'Tôi đã mua vé nhưng chưa nhận được email xác nhận. Vui lòng kiểm tra giúp tôi.', 'open', NULL, '2024-06-05 10:00:00', '2024-06-05 10:00:00'),
-(2, 3, 'Hoàn vé', 'Tôi muốn hoàn vé cho sự kiện Tech Conference vì có việc đột xuất không thể tham dự.', 'in_progress', 'Chúng tôi đang xử lý yêu cầu hoàn vé của bạn. Sẽ liên hệ lại trong 24h.', '2024-07-15 14:30:00', '2024-07-15 16:00:00'),
-(3, 4, 'Thay đổi thông tin', 'Tôi muốn thay đổi số điện thoại trong thông tin đăng ký.', 'resolved', 'Đã cập nhật số điện thoại mới cho bạn.', '2024-08-01 09:15:00', '2024-08-01 11:30:00'),
-(4, 2, 'Kỹ thuật', 'Website không thể thanh toán bằng thẻ tín dụng. Lỗi 500 Internal Server Error.', 'open', NULL, '2024-08-10 16:45:00', '2024-08-10 16:45:00'),
-(5, 3, 'Chuyển vé', 'Tôi muốn chuyển vé cho người khác tham dự sự kiện.', 'closed', 'Đã hướng dẫn cách chuyển vé qua email.', '2024-09-05 11:20:00', '2024-09-05 15:45:00');
+INSERT INTO support_tickets (id, user_id, subject, message, status, created_at) VALUES
+(1, 2, 'Vấn đề về vé', 'Tôi đã mua vé nhưng chưa nhận được email xác nhận. Vui lòng kiểm tra giúp tôi.', 'open', '2024-06-05 10:00:00'),
+(2, 3, 'Hoàn vé', 'Tôi muốn hoàn vé cho sự kiện Tech Conference vì có việc đột xuất không thể tham dự.', 'in_progress', '2024-07-15 14:30:00'),
+(3, 4, 'Thay đổi thông tin', 'Tôi muốn thay đổi số điện thoại trong thông tin đăng ký.', 'resolved', '2024-08-01 09:15:00'),
+(4, 2, 'Kỹ thuật', 'Website không thể thanh toán bằng thẻ tín dụng. Lỗi 500 Internal Server Error.', 'open', '2024-08-10 16:45:00'),
+(5, 3, 'Chuyển vé', 'Tôi muốn chuyển vé cho người khác tham dự sự kiện.', 'closed', '2024-09-05 11:20:00');
 
 -- =========================
 -- THÔNG TIN ĐĂNG NHẬP TEST
@@ -157,15 +158,15 @@ USER ACCOUNTS:
 - Email: john@email.com / Password: password
 - Email: jane@email.com / Password: password  
 - Email: dinhhiep@gmail.com / Password: password
-- Email: manager@event.com / Password: password (Role: manager)
+- Email: manager@event.com / Password: password (Role: admin)
 
 TEST DATA SUMMARY:
-- 5 users (1 admin, 1 manager, 3 users)
+- 5 users (2 admin, 3 users)
 - 6 categories
 - 6 venues
 - 6 events (1 completed, 5 upcoming)
 - 6 artists in lineup
-- 20 tickets (13 sold, 7 available)
+- 20 tickets (13 sold, 7 available) với Type A/B/C và QR codes
 - 13 payments
 - 10 reviews
 - 5 support tickets

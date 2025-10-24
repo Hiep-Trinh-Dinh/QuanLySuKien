@@ -211,7 +211,7 @@ app.get('/tickets', async (req, res) => {
     const event_id = req.query.event_id;
     if (!event_id) return res.status(400).json({ message: 'Thiếu event_id!' });
     const [tickets] = await pool.query(
-      'SELECT id, event_id, seat_number, price, status FROM tickets WHERE event_id = ?',
+      'SELECT id, event_id, seat_number, Type, price, status, qr_code FROM tickets WHERE event_id = ?',
       [event_id]
     );
     res.json(tickets);
@@ -254,17 +254,18 @@ app.post('/purchase-ticket', async (req, res) => {
       return res.status(400).json({ message: 'Thiếu thông tin bắt buộc!' });
     }
     
-    // Tạo vé mới
+    // Tạo vé mới với QR code
     const ticketData = [];
     for (let i = 0; i < quantity; i++) {
-      ticketData.push([event_id, user_id, `${ticket_type}-${Date.now()}-${i}`, total_amount / quantity, 'sold', new Date()]);
+      const qrCode = `QR${Date.now()}${i}`;
+      ticketData.push([event_id, user_id, i + 1, ticket_type, total_amount / quantity, 'sold', qrCode, new Date()]);
     }
     
-    const placeholders = ticketData.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
+    const placeholders = ticketData.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
     const values = ticketData.flat();
     
     await pool.query(
-      `INSERT INTO tickets (event_id, user_id, seat_number, price, status, purchased_at) VALUES ${placeholders}`,
+      `INSERT INTO tickets (event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES ${placeholders}`,
       values
     );
     
@@ -637,11 +638,11 @@ app.get('/admin/users', async (req, res) => {
 app.put('/admin/users/:id', async (req, res) => {
   try {
     const userId = req.params.id;
-    const { role, status } = req.body;
+    const { role } = req.body;
     
     await pool.query(
-      'UPDATE users SET role = ?, status = ? WHERE id = ?',
-      [role, status, userId]
+      'UPDATE users SET role = ? WHERE id = ?',
+      [role, userId]
     );
     
     res.json({ message: 'Cập nhật quyền người dùng thành công!' });
@@ -818,11 +819,11 @@ app.get('/admin/support-tickets', async (req, res) => {
 app.put('/admin/support-tickets/:id', async (req, res) => {
   try {
     const ticketId = req.params.id;
-    const { status, admin_response } = req.body;
+    const { status } = req.body;
     
     await pool.query(
-      'UPDATE support_tickets SET status = ?, admin_response = ?, updated_at = NOW() WHERE id = ?',
-      [status, admin_response, ticketId]
+      'UPDATE support_tickets SET status = ? WHERE id = ?',
+      [status, ticketId]
     );
     
     res.json({ message: 'Cập nhật ticket hỗ trợ thành công!' });
