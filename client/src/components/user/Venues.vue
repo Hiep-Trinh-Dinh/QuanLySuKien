@@ -3,22 +3,26 @@ import Map from "../Map.vue";
 import "../../assets/css/global.css";
 export default {
   name: "Venue",
+  props: {
+    venue: { type: Object, required: false }
+  },
   components: { Map },
 };
 </script>
 <template>
   <h4>Venue Information</h4>
-  <span>
-    Hanoi Opera House is a historic landmark and one of Vietnam's most
-    prestigious cultural venues. Built in 1911 in the French colonial style,
-    this architectural masterpiece now hosts world-class performances and
-    events.
+  <span v-if="venue">
+    {{ venue.venue_name }} - {{ venue.venue_address }}
+  </span>
+  <span v-else>
+    Chưa có thông tin địa điểm cụ thể.
   </span>
 
   <h5 class="mt-3">Location & Directions</h5>
-  <Map />
+  <Map v-if="venue && venue.venue_address" :address="venue.venue_address" />
+  <span v-else class="text-secondary">Đang tải địa chỉ sự kiện...</span>
   <span class="fw-bold">
-    Address: 1 Tràng Tiền, Phan Chu Trinh, Hoàn Kiếm, Hanoi, Vietnam
+    Address: {{ venue?.venue_address || 'Chưa có địa chỉ sự kiện' }}
   </span>
   <div class="mt-3">
     <h5>Getting there</h5>

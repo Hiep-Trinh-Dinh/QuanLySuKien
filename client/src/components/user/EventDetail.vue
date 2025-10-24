@@ -1,146 +1,94 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import imgBackgroud from "../../assets/img/—Pngtree—a massive crowd of people_16139729.png";
+import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import OverView from "./OverView.vue";
 import Lineup from "./Lineup.vue";
 import Review from "./Review.vue";
 import Venues from "./Venues.vue";
+// Import ảnh fallback (đảm bảo file này tồn tại trong assets, nếu không thì dùng url ảnh online bên dưới)
+// import defaultImg from '../../assets/img/—Pngtree—a massive crowd of people_16139729.png';
+const DEFAULT_IMG = 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80';
 
-// props nhận background URL
-// const props = defineProps<{
-//   bgUrl: string;
-// }>();
+const route = useRoute();
+const eventInfo = ref(null);
+const loading = ref(true);
+const error = ref(null);
+const id = route.params.id;
 
-const bgUrl = imgBackgroud;
+function formatDate(value) {
+  if (!value) return '';
+  return new Date(value).toLocaleDateString('vi-VN');
+}
+function formatTime(value) {
+  if (!value) return '';
+  return new Date(value).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+}
 
-// dùng computed để tạo CSS variable cho pseudo-element
+const bgUrl = computed(() => eventInfo.value?.image_url || DEFAULT_IMG);
 const bgStyle = computed(() => ({
-  "--bg-url": `url(${bgUrl})`,
+  "--bg-url": `url(${bgUrl.value})`,
 }));
-const userInfo = ref({
-  name: "Võ Anh Tuấn",
-  date: "October 05, 2025",
-  timeStart: "2:00 PM",
-  timeEnd: "5:00 PM",
-  place: "SGU Quận 5, Thành phố Hồ Chí Minh",
+
+onMounted(async () => {
+  loading.value = true;
+  try {
+    const res = await fetch(`http://localhost:3000/events/${id}`);
+    if (!res.ok) throw new Error("Không tìm thấy sự kiện");
+    eventInfo.value = await res.json();
+  } catch (e) {
+    error.value = e.message;
+  } finally {
+    loading.value = false;
+  }
 });
 </script>
 
 <template>
-  <div>
+  <div v-if="loading" class="text-center py-5">Loading...</div>
+  <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
+  <div v-else-if="eventInfo">
     <div class="text-start fw-bold h2 ms-4">
-      <span>{{ userInfo.name }}</span>
+      <span>{{ eventInfo.title }}</span>
     </div>
-
     <div>
       <ul class="horizontal-list">
-        <li>{{ userInfo.date }}</li>
-        <li>{{ userInfo.timeStart }}</li>
-        <li>{{ userInfo.place }}</li>
+        <li>{{ formatDate(eventInfo.start_time) }}</li>
+        <li>{{ formatTime(eventInfo.start_time) }}</li>
+        <li>{{ eventInfo.venue_name }} - {{ eventInfo.venue_address }}</li>
       </ul>
     </div>
-
     <!-- Div dynamic background -->
     <div class="dynamic-bg" :style="bgStyle">
       <i class="pi pi-tiktok"></i>
-      <span class="content">Event Content</span>
+      <span class="content">{{ eventInfo.description }}</span>
     </div>
     <div class="ms-2 mt-2">
       <ul class="nav nav-pills mb-3 gap-2" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
-          <button
-            class="nav-link active"
-            id="pills-overview-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-overview"
-            type="button"
-            role="tab"
-            aria-controls="pills-overview"
-            aria-selected="true"
-          >
-            Overview
-          </button>
+          <button class="nav-link active" id="pills-overview-tab" data-bs-toggle="pill" data-bs-target="#pills-overview" type="button" role="tab" aria-controls="pills-overview" aria-selected="true">Overview</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            id="pills-lineup-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-lineup"
-            type="button"
-            role="tab"
-            aria-controls="pills-lineup"
-            aria-selected="false"
-          >
-            Lineup
-          </button>
+          <button class="nav-link" id="pills-lineup-tab" data-bs-toggle="pill" data-bs-target="#pills-lineup" type="button" role="tab" aria-controls="pills-lineup" aria-selected="false">Lineup</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            id="pills-venues-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-venues"
-            type="button"
-            role="tab"
-            aria-controls="pills-venues"
-            aria-selected="false"
-          >
-            Venue
-          </button>
+          <button class="nav-link" id="pills-venues-tab" data-bs-toggle="pill" data-bs-target="#pills-venues" type="button" role="tab" aria-controls="pills-venues" aria-selected="false">Venue</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            id="pills-reviews-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-reviews"
-            type="button"
-            role="tab"
-            aria-controls="pills-reviews"
-            aria-selected="false"
-          >
-            Reviews
-          </button>
+          <button class="nav-link" id="pills-reviews-tab" data-bs-toggle="pill" data-bs-target="#pills-reviews" type="button" role="tab" aria-controls="pills-reviews" aria-selected="false">Reviews</button>
         </li>
       </ul>
-
       <div class="tab-content" id="pills-tabContent">
-        <div
-          class="tab-pane fade show active"
-          id="pills-overview"
-          role="tabpanel"
-          aria-labelledby="pills-overview-tab"
-          tabindex="0"
-        >
-          <OverView :user="userInfo" />
+        <div class="tab-pane fade show active" id="pills-overview" role="tabpanel" aria-labelledby="pills-overview-tab" tabindex="0">
+          <OverView :event="eventInfo" />
         </div>
-        <div
-          class="tab-pane fade"
-          id="pills-lineup"
-          role="tabpanel"
-          aria-labelledby="pills-lineup-tab"
-          tabindex="0"
-        >
-          <Lineup />
+        <div class="tab-pane fade" id="pills-lineup" role="tabpanel" aria-labelledby="pills-lineup-tab" tabindex="0">
+          <Lineup :event="eventInfo" />
         </div>
-        <div
-          class="tab-pane fade"
-          id="pills-venues"
-          role="tabpanel"
-          aria-labelledby="pills-venues-tab"
-          tabindex="0"
-        >
-          <Venues />
+        <div class="tab-pane fade" id="pills-venues" role="tabpanel" aria-labelledby="pills-venues-tab" tabindex="0">
+          <Venues :venue="eventInfo" />
         </div>
-        <div
-          class="tab-pane fade"
-          id="pills-reviews"
-          role="tabpanel"
-          aria-labelledby="pills-reviews-tab"
-          tabindex="0"
-        >
-          <Review />
+        <div class="tab-pane fade" id="pills-reviews" role="tabpanel" aria-labelledby="pills-reviews-tab" tabindex="0">
+          <Review :eventId="eventInfo.id" />
         </div>
       </div>
     </div>

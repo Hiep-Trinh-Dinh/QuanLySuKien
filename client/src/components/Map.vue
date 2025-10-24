@@ -12,16 +12,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-
-// địa chỉ cần map
-const address = ref("1 Tràng Tiền, Phan Chu Trinh, Hoàn Kiếm, Hanoi, Vietnam");
-
-// tạo URL đã encode
+import { computed, toRef } from "vue";
+const props = defineProps({ address: { type: String, default: "1 Tràng Tiền, Phan Chu Trinh, Hoàn Kiếm, Hanoi, Vietnam" } });
 const mapUrl = computed(() => {
-  return `https://www.google.com/maps?q=${encodeURIComponent(
-    address.value
-  )}&output=embed`;
+  return `https://www.google.com/maps?q=${encodeURIComponent(props.address)}&output=embed`;
 });
 </script>
 

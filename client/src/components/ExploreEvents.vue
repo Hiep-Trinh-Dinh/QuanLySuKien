@@ -58,7 +58,7 @@
               <div class="explore-featured-info">
                 <div class="explore-featured-name">{{ event.title }}</div>
                 <div class="explore-featured-meta">{{ event.venue_name }} • {{ (new Date(event.start_time)).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}) }}</div>
-                <router-link :to="`/event-detail?id=${event.id}`" class="explore-featured-btn">View Details</router-link>
+                <router-link :to="`/event-detail/${event.id}`" class="explore-featured-btn">View Details</router-link>
               </div>
             </div>
           </div>

@@ -4,10 +4,13 @@
         <h1 class="event-review-title">Đánh Giá Sự Kiện</h1>
         <div class="event-review-box">
           <h2>Chi tiết sự kiện</h2>
-          <div class="event-info">
-            <div><b>Tên sự kiện:</b> Summer Music Festival</div>
-            <div><b>Mô tả:</b> Hội thảo bàn luận về sự phát triển vượt trội của công nghệ AI</div>
-          </div>
+        <div class="event-info" v-if="eventInfo">
+          <div><b>Tên sự kiện:</b> {{ eventInfo.title }}</div>
+          <div><b>Mô tả:</b> {{ eventInfo.description }}</div>
+        </div>
+        <div class="event-info" v-else>
+          <div>Đang tải thông tin sự kiện...</div>
+        </div>
           <form v-if="isLoggedIn" @submit.prevent="handleSubmit">
             <div class="form-group">
               <label>Đánh giá (1-5 sao):</label>
@@ -48,7 +51,13 @@
   
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { eventReview } from "../scripts/EventReview.js";
+
+const route = useRoute();
+const router = useRouter();
+const eventId = ref(route.query.id || 1);
+const eventInfo = ref(null);
 
 const rating = ref(0);
 const name = ref("");
@@ -58,13 +67,23 @@ const comment = ref("");
 const user = ref(null);
 const isLoggedIn = ref(false);
 
-onMounted(() => {
+onMounted(async () => {
   const raw = localStorage.getItem("user");
   user.value = raw ? JSON.parse(raw) : null;
   isLoggedIn.value = !!user.value;
   if (user.value) {
     email.value = user.value.email || "";
     name.value = user.value.username || "";
+  }
+  
+  // Fetch thông tin event để hiển thị
+  try {
+    const res = await fetch(`http://localhost:3000/events/${eventId.value}`);
+    if (res.ok) {
+      eventInfo.value = await res.json();
+    }
+  } catch (e) {
+    console.error("Không thể tải thông tin sự kiện:", e);
   }
 });
 
@@ -77,20 +96,33 @@ async function handleSubmit() {
     alert("Bạn cần đăng nhập để gửi đánh giá!");
     return;
   }
-  // Giả sử eventId được lấy qua props
-  const eventId = 1;
+  
+  if (rating.value === 0) {
+    alert("Vui lòng chọn số sao đánh giá!");
+    return;
+  }
+  
+  // Debug: Kiểm tra giá trị comment
+  console.log('Comment value:', comment.value);
+  console.log('Comment type:', typeof comment.value);
+  console.log('Comment length:', comment.value?.length);
+  
   const result = await eventReview(
-    eventId,
+    eventId.value,
     user.value.id,
     rating.value,
     name.value,
     email.value,
     phone.value,
-    comment.value
+    comment.value || ''
   );
+  
   if (result) {
-    alert("Đã gửi đánh giá!");
-    // Reset form nếu muốn
+    alert("Đã gửi đánh giá thành công!");
+    // Redirect về trang chi tiết event
+    router.push(`/event-detail/${eventId.value}`);
+  } else {
+    alert("Có lỗi xảy ra khi gửi đánh giá!");
   }
 }
 </script>
