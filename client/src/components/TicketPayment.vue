@@ -1,13 +1,13 @@
 <template>
   <div class="ticket-payment-wrapper">
     <h1 class="payment-title">Event Ticket Payment</h1>
-    <div class="payment-desc">Mua vé cho sự kiện sắp tới</div>
+    <div class="payment-desc">Mua vé cho sự kiện</div>
     <div class="event-info-box">
-      <div class="event-title">Summer Music Festival</div>
-      <div class="event-desc">Hãy tham gia cùng chúng tôi trong sự kiện âm nhạc lớn nhất trong năm</div>
+      <div class="event-title">{{ eventDetail?.title || 'Đang tải sự kiện...' }}</div>
+      <div class="event-desc">{{ eventDetail?.description || ' ' }}</div>
       <div class="event-meta">
-        <span class="event-date"><i class="icon-calendar"></i> 15-16 tháng 3, 2024</span>
-        <span class="event-location"><i class="icon-location"></i> Sân vận động Mỹ Đình, Hà Nội</span>
+        <span class="event-date"><i class="icon-calendar"></i> {{ formattedEventDate }}</span>
+        <span class="event-location"><i class="icon-location"></i> {{ formattedEventLocation }}</span>
       </div>
     </div>
     <div class="payment-main">
@@ -15,16 +15,19 @@
         <div class="ticket-section">
           <div class="ticket-section-title">Chọn vé</div>
           <div class="ticket-type-list">
-            <label v-for="t in ticketTypes" :key="t.Type"
-                   class="ticket-type"
-                   :class="{active: selectedType === t.Type}"
-                   @click="selectedType = t.Type; quantity=1">
-              <div class="ticket-type-content">
-                <div class="ticket-type-name">Vé {{ t.Type }}</div>
-                <div class="ticket-type-desc">Loại vé: {{ t.Type }}</div>
-                <div class="ticket-type-price">{{ t.price ? t.price.toLocaleString() : '-' }} VND</div>
-              </div>
-            </label>
+            <template v-if="remaining > 0 && ticketTypes.length">
+              <label v-for="t in ticketTypes" :key="t.Type"
+                     class="ticket-type"
+                     :class="{active: selectedType === t.Type}"
+                     @click="onSelectType(t.Type)">
+                <div class="ticket-type-content">
+                  <div class="ticket-type-name">Vé {{ t.Type }}</div>
+                  <div class="ticket-type-desc">Số vé còn lại: {{ remaining }}</div>
+                  <div class="ticket-type-price">{{ t.price ? t.price.toLocaleString() : '-' }} VND</div>
+                </div>
+              </label>
+            </template>
+            <div v-else class="soldout-note">Sự kiện đã hết vé</div>
           </div>
         </div>
         <div class="ticket-section">
@@ -34,6 +37,7 @@
             <span>{{ quantity }}</span>
             <button @click="increaseQuantity" :disabled="quantity>=maxAvailable">+</button>
           </div>
+          <div v-if="maxAvailable===0" class="soldout-note">Hết vé sự kiện</div>
         </div>
         <div class="ticket-section">
           <div class="ticket-section-title">Tổng cộng</div>
@@ -83,8 +87,8 @@
               </label>
             </div>
           </div>
-          <button class="complete-btn ticketpay-btn" @click="handlePayment" :disabled="isPaying">
-            {{ isPaying ? 'Đang xử lý...' : 'Hoàn thành' }}
+          <button class="complete-btn ticketpay-btn" @click="handlePayment" :disabled="isPaying || maxAvailable===0">
+            {{ maxAvailable===0 ? 'Hết vé' : (isPaying ? 'Đang xử lý...' : 'Hoàn thành') }}
           </button>
           <div class="secure-note">Thông tin thanh toán của bạn được bảo mật và mã hóa</div>
         </div>
@@ -97,12 +101,13 @@
 <style src="../assets/css/ticket-payment.css"></style>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import axios from "axios";
 import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
+const ticketsRaw = ref([]);
 const ticketTypes = ref([]);
 const selectedType = ref("");
 const quantity = ref(1);
@@ -112,20 +117,45 @@ const phone = ref("");
 const paymentMethod = ref("credit");
 const isPaying = ref(false);
 const paymentMsg = ref("");
+const eventDetail = ref(null);
 
-// Lấy event_id từ ?event_id=xxx hoặc mặc định là 1 để test
 const eventId = route.query.event_id || 1;
+const currentUser = (() => {
+  try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
+})();
+const userId = currentUser?.id;
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`http://localhost:3000/tickets?event_id=${eventId}`);
-    ticketTypes.value = res.data.reduce((acc, curr) => {
+    const [ticketsRes, eventRes] = await Promise.all([
+      axios.get(`http://localhost:3000/tickets?event_id=${eventId}`),
+      axios.get(`http://localhost:3000/events/${eventId}`)
+    ]);
+    ticketsRaw.value = ticketsRes.data || [];
+    ticketTypes.value = ticketsRaw.value.reduce((acc, curr) => {
       if (!acc.find(t => t.Type === curr.Type)) acc.push(curr);
       return acc;
     }, []);
     if(ticketTypes.value.length>0) selectedType.value = ticketTypes.value[0].Type;
+    eventDetail.value = eventRes.data;
   } catch (e) {
+    ticketsRaw.value = [];
     ticketTypes.value = [];
+    eventDetail.value = null;
+  }
+});
+
+const venueCapacity = computed(() => Number(eventDetail.value?.venue_capacity || 0));
+const soldCount = computed(() => ticketsRaw.value.filter(x => x.status === 'sold').length);
+const remaining = computed(() => Math.max(venueCapacity.value - soldCount.value, 0));
+const maxAvailable = computed(() => remaining.value);
+
+watch(remaining, (val) => {
+  if (val === 0) {
+    selectedType.value = '';
+    quantity.value = 0;
+  } else if (quantity.value === 0) {
+    quantity.value = 1;
   }
 });
 
@@ -141,41 +171,56 @@ const totalAmount = computed(() => {
 const totalAmountDisplay = computed(() => {
   return totalAmount.value ? totalAmount.value.toLocaleString() + " VND" : "0 VND";
 });
-const maxAvailable = computed(() => (10)); // Sửa nếu cần lấy số lượng vé thật từ backend
-function increaseQuantity() { if (quantity.value < maxAvailable.value) quantity.value++; }
-function decreaseQuantity() { if (quantity.value > 1) quantity.value--; }
+
+function onSelectType(type){
+  selectedType.value = type;
+  quantity.value = remaining.value > 0 ? 1 : 0;
+}
+function increaseQuantity(){ if (quantity.value < maxAvailable.value) quantity.value++; }
+function decreaseQuantity(){ if (quantity.value > 1) quantity.value--; }
+
+const formattedEventDate = computed(() => {
+  if (!eventDetail.value) return '';
+  const s = new Date(eventDetail.value.start_time);
+  const e = new Date(eventDetail.value.end_time);
+  const dateStr = s.toLocaleDateString('vi-VN', { day:'2-digit', month:'short', year:'numeric' });
+  const timeStr = `${s.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})} - ${e.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})}`;
+  return `${dateStr} • ${timeStr}`;
+});
+const formattedEventLocation = computed(() => {
+  if (!eventDetail.value) return '';
+  return eventDetail.value.venue_name ? `${eventDetail.value.venue_name}${eventDetail.value.venue_address ? ', ' + eventDetail.value.venue_address : ''}` : '';
+});
 
 async function handlePayment() {
   if(isPaying.value) return;
   paymentMsg.value = "";
-  // Kiểm tra dữ liệu đầu vào
-  if(!name.value || !email.value || !phone.value) {
-    paymentMsg.value = "Vui lòng nhập đầy đủ thông tin liên lạc!";
-    return;
-  }
-  if(!selectedType.value) {
-    paymentMsg.value = "Vui lòng chọn loại vé!";
-    return;
-  }
+  if(!userId) { paymentMsg.value = "Vui lòng đăng nhập trước khi thanh toán!"; return; }
+  if(!name.value || !email.value || !phone.value) { paymentMsg.value = "Vui lòng nhập đầy đủ thông tin liên lạc!"; return; }
+  if(!selectedType.value || !totalAmount.value || maxAvailable.value===0) { paymentMsg.value = "Hết vé hoặc số lượng không hợp lệ!"; return; }
+  if(quantity.value > maxAvailable.value) { paymentMsg.value = `Chỉ còn ${maxAvailable.value} vé.`; return; }
+
   isPaying.value = true;
   try {
-    // Bước 1: Mua vé (tạo vé sold cho user), backend tự phân phối seat_number,
-    // Loại vé truyền thông qua ticket_type (t.Type), event_id, quantity, tổng tiền
     const buyPayload = {
       event_id: Number(eventId),
+      user_id: Number(userId),
       ticket_type: selectedType.value,
-      quantity: quantity.value,
-      total_amount: totalAmount.value,
+      quantity: Number(quantity.value),
+      total_amount: Number(totalAmount.value),
       name: name.value,
       email: email.value,
       phone: phone.value,
       payment_method: paymentMethod.value
     };
     const res = await axios.post("http://localhost:3000/purchase-ticket", buyPayload);
-    // Nếu backend tách riêng thanh toán, gửi tiếp POST /payment ở đây.
     paymentMsg.value = res.data?.message || "Thanh toán thành công!";
-    // Tùy dự án nếu cần có thể chuyển sang trang cảm ơn:
-    // setTimeout(()=>router.push('/thankyou'), 1500);
+    const [ticketsRes, eventRes] = await Promise.all([
+      axios.get(`http://localhost:3000/tickets?event_id=${eventId}`),
+      axios.get(`http://localhost:3000/events/${eventId}`)
+    ]);
+    ticketsRaw.value = ticketsRes.data || [];
+    eventDetail.value = eventRes.data || eventDetail.value;
   } catch(e) {
     paymentMsg.value = e.response?.data?.message || "Thanh toán thất bại!";
   } finally {

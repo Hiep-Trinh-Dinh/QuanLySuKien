@@ -110,7 +110,7 @@ app.get('/events', async (req, res) => {
 app.get('/events/:id', async (req, res) => {
   try {
     const [events] = await pool.query(
-      `SELECT e.*, c.name as category_name, v.name as venue_name, v.address as venue_address,
+      `SELECT e.*, c.name as category_name, v.name as venue_name, v.address as venue_address, v.capacity as venue_capacity,
         IFNULL(u.full_name, u.username) as event_creator_name
        FROM events e
        LEFT JOIN categories c ON e.category_id = c.id
@@ -248,28 +248,75 @@ app.get('/user-tickets', async (req, res) => {
 // POST /purchase-ticket - Mua vé
 app.post('/purchase-ticket', async (req, res) => {
   try {
-    const { event_id, user_id, ticket_type, quantity, total_amount } = req.body;
+    const { event_id, user_id, ticket_type, quantity, total_amount, payment_method } = req.body;
     
     if (!event_id || !user_id || !ticket_type || !quantity || !total_amount) {
       return res.status(400).json({ message: 'Thiếu thông tin bắt buộc!' });
     }
-    
-    // Tạo vé mới với QR code
-    const ticketData = [];
-    for (let i = 0; i < quantity; i++) {
-      const qrCode = `QR${Date.now()}${i}`;
-      ticketData.push([event_id, user_id, i + 1, ticket_type, total_amount / quantity, 'sold', qrCode, new Date()]);
+
+    // Kiểm tra user tồn tại
+    const [users] = await pool.query('SELECT id FROM users WHERE id = ?', [user_id]);
+    if (users.length === 0) {
+      return res.status(400).json({ message: 'User không tồn tại. Vui lòng đăng nhập lại.' });
     }
-    
-    const placeholders = ticketData.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
-    const values = ticketData.flat();
-    
-    await pool.query(
-      `INSERT INTO tickets (event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES ${placeholders}`,
-      values
+
+    // Lấy thông tin event và capacity của venue
+    const [eventRows] = await pool.query(
+      `SELECT e.id, v.capacity FROM events e LEFT JOIN venues v ON e.venue_id = v.id WHERE e.id = ?`,
+      [event_id]
     );
-    
-    res.json({ message: 'Mua vé thành công!' });
+    if (eventRows.length === 0) {
+      return res.status(404).json({ message: 'Không tìm thấy sự kiện!' });
+    }
+    const venueCapacity = Number(eventRows[0].capacity) || 0;
+
+    // Đếm số vé đã bán của sự kiện (mọi loại)
+    const [soldCountRows] = await pool.query(
+      'SELECT COUNT(*) as sold FROM tickets WHERE event_id = ? AND status = "sold"',
+      [event_id]
+    );
+    const soldCount = Number(soldCountRows[0].sold) || 0;
+
+    // Kiểm tra còn đủ chỗ không
+    const remaining = Math.max(venueCapacity - soldCount, 0);
+    if (remaining <= 0 || remaining < quantity) {
+      return res.status(400).json({ message: `Hết vé hoặc không đủ số lượng. Còn lại: ${remaining}` });
+    }
+
+    // Tạo các vé mới với seat_number theo thứ tự mua (soldCount + i + 1)
+    const unitPrice = total_amount / quantity;
+    const now = new Date();
+    const qrBase = `QR${Date.now()}`;
+
+    const ticketValues = [];
+    for (let i = 0; i < quantity; i++) {
+      const seatNumber = soldCount + i + 1; // thứ tự mua
+      const qrCode = `${qrBase}${i}`;
+      ticketValues.push([event_id, user_id, seatNumber, ticket_type, unitPrice, 'sold', qrCode, now]);
+    }
+
+    const placeholders = ticketValues.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
+    const [insertTickets] = await pool.query(
+      `INSERT INTO tickets (event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES ${placeholders}`,
+      ticketValues.flat()
+    );
+
+    // Ghi nhận payments
+    const firstTicketId = insertTickets.insertId;
+    const insertedCount = insertTickets.affectedRows || quantity;
+    const payMethod = payment_method || 'credit_card';
+    const payments = [];
+    for (let i = 0; i < insertedCount; i++) {
+      const ticketId = firstTicketId + i;
+      payments.push([ticketId, user_id, unitPrice, payMethod, 'paid', now]);
+    }
+    const payPlaceholders = payments.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
+    await pool.query(
+      `INSERT INTO payments (ticket_id, user_id, amount, payment_method, status, paid_at) VALUES ${payPlaceholders}`,
+      payments.flat()
+    );
+
+    res.json({ message: 'Mua vé và ghi nhận thanh toán thành công!', tickets_created: insertedCount, remaining_after: remaining - insertedCount });
   } catch (err) {
     console.error('Error in /purchase-ticket:', err);
     res.status(500).json({ message: 'Lỗi server khi mua vé.' });

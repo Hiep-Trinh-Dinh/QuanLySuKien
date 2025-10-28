@@ -213,6 +213,7 @@
   box-shadow: 0 2px 8px rgba(108,99,255,0.08);
   text-decoration: none;
   text-align: center;
+  ;
 }
 .explore-featured-btn:hover {
   background: #a18cd1;
@@ -265,6 +266,7 @@
   font-size: 1.25rem;
   display: flex;
   align-items: center;
+  text-decoration: none;
 }
 .explore-upcoming-arrow:hover{
     color: #18181b;

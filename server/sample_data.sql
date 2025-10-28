@@ -38,7 +38,6 @@ VALUES
 ('Tech Conference 2024', 'Hội nghị công nghệ lớn nhất năm.', 2, 2, '2024-08-20 09:00:00', '2024-08-20 17:00:00', 1, null, 'active'),
 ('Football Final', 'Chung kết giải bóng đá.', 3, 1, '2024-06-30 19:30:00', '2024-06-30 21:30:00', 2, null, 'ended');
 
--- =========================
 -- 5. ARTISTS
 -- =========================
 INSERT INTO artists (name, bio, avatar_url)
