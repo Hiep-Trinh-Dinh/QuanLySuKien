@@ -102,10 +102,6 @@ async function handleSubmit() {
     return;
   }
   
-  // Debug: Kiểm tra giá trị comment
-  console.log('Comment value:', comment.value);
-  console.log('Comment type:', typeof comment.value);
-  console.log('Comment length:', comment.value?.length);
   
   const result = await eventReview(
     eventId.value,

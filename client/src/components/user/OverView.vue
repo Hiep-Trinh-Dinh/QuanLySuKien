@@ -47,7 +47,7 @@
       <div class="card-body">
         <h5 class="card-title">{{ event.price ? event.price + ' VND' : 'Liên hệ' }}</h5>
         <p class="card-text">Vé vào cửa chung với quyền tham dự tất cả các buổi biểu diễn</p>
-        <router-link to="/ticket-purchase" class="btn btn-primary btn-custom">Mua vé</router-link>
+        <router-link to="/ticket-payment" class="btn btn-primary btn-custom">Mua vé</router-link>
       </div>
     </div>
     <!-- Tuỳ thuộc event có ticket types động không, nếu có thì loop tại đây -->
