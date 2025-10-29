@@ -1,23 +1,24 @@
 <template>
-  <div class="ticket-card">
-    <div
-      class="ticket-image"
-      :style="{ backgroundImage: `url(${image})` }"
-    ></div>
-    <div class="ticket-content">
-      <p class="ticket-date">{{ date }}</p>
-      <h3 class="ticket-title">{{ title }}</h3>
-      <p class="ticket-location">{{ location }} • {{ tickets }} Vé</p>
+  <div class="ticket-card" @click="emit('select', ticket)">
+    <div class="ticket-img" :style="{ backgroundImage: `url(${ticket.image_url})` }"></div>
+
+    <div class="ticket-info">
+      <div class="ticket-date">
+        {{ formatDate(ticket.start_time) }}
+      </div>
+
+      <h3 class="ticket-title">{{ ticket.title }}</h3>
+
+      <p class="ticket-sub">
+        {{ ticket.venue_name }} • {{ ticket.ticket_count || 1 }} vé
+      </p>
+
       <div class="ticket-actions">
-        <button class="btn view">Xem vé</button>
-        <button
-          class="btn transfer"
-          @click="
-            $router.push({ name: 'TicketInformation', params: { id: id } })
-          "
-        >
-          Thông tin
-        </button>
+        <!-- Gọi event để hiển thị panel chi tiết ngay trong MyTicket.vue -->
+        <button class="btn primary" @click.stop="emit('select', ticket)">Xem vé</button>
+
+        <!-- Chuyển sang trang chi tiết -->
+        <button class="btn secondary" @click.stop="goDetail">Thông tin vé</button>
       </div>
     </div>
   </div>
@@ -27,88 +28,105 @@
 import { useRouter } from "vue-router";
 
 const props = defineProps({
-  id: Number,
-  date: String,
-  title: String,
-  location: String,
-  tickets: String,
-  image: String,
-  price: String,
-  status: String,
+  ticket: Object,
 });
+const emit = defineEmits(["select"]); // <- thêm emit select
 
 const router = useRouter();
-const goToInfo = () => {
-  router.push({ name: "ticketInfo", params: { id: props.id } });
+const goDetail = () => {
+  router.push({ name: "TicketInformation", params: { id: props.ticket.id } });
 };
+
+const formatDate = (d) =>
+  new Date(d).toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 </script>
+
 
 <style scoped>
 .ticket-card {
-  display: flex;
-  align-items: flex-end;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 20px;
   position: relative;
-  height: 160px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #f5f5ff;
+  padding: 18px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: 0.25s;
 }
+
 .ticket-card:hover {
   transform: translateY(-4px);
 }
-.ticket-image {
+
+.ticket-img {
   position: absolute;
   inset: 0;
   background-size: cover;
   background-position: center;
-  opacity: 0.25; /* làm mờ ảnh nền */
+  opacity: 0.32;
 }
-.ticket-content {
+
+.ticket-info {
   position: relative;
-  padding: 16px;
-  width: 100%;
-  z-index: 1;
+  z-index: 2;
+  width: 70%;
+  display: flex;
+  flex-direction: column;
 }
+
 .ticket-date {
   font-size: 14px;
-  color: #666;
+  color: #444;
+  margin-bottom: 4px;
 }
+
 .ticket-title {
-  font-size: 18px;
-  margin: 6px 0;
+  font-size: 20px;
   font-weight: 600;
   color: #111;
+  margin-bottom: 8px;
 }
-.ticket-location {
+
+.ticket-sub {
   font-size: 14px;
   color: #555;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
+
 .ticket-actions {
   display: flex;
   gap: 10px;
 }
+
 .btn {
-  padding: 6px 12px;
-  border-radius: 6px;
   font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 6px;
   font-weight: 500;
-  cursor: pointer;
   border: none;
+  cursor: pointer;
   transition: 0.2s;
 }
-.btn.view {
-  background-color: #4f46e5;
+
+.btn.primary {
+  background: #4f46e5;
   color: white;
 }
-.btn.transfer {
-  background-color: #eef2ff;
-  color: #3e36dd;
+
+.btn.secondary {
+  background: #e9e7ff;
+  color: #4f46e5;
 }
+
 .btn:hover {
   opacity: 0.9;
 }
