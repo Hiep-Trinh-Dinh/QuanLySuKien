@@ -16,7 +16,10 @@ export default {
   },
   computed: {
     userAvatar(){
-      return this.user?.avatar || 'https://i.pravatar.cc/100?img=12'
+      const VUE_DEFAULT_IMG = 'https://res.cloudinary.com/dkdba4w94/image/upload/v1761639330/new-official-one-piece-art-to-celebrate-the-28th-anniversary-v0-r6mzac5bs8ef1_ufmaao.jpg';
+      // return this.user?.avatar || 'https://i.pravatar.cc/100?img=12' // this.env.VUE_DEFAULT_IMG
+      console.log('User avatar:', this.user?.avatar);
+      return this.user?.avatar || VUE_DEFAULT_IMG;
     }
   },
   mounted(){

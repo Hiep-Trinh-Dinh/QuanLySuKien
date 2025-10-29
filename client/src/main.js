@@ -7,5 +7,17 @@ import "bootstrap";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "primeicons/primeicons.css";
 import "leaflet/dist/leaflet.css";
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
-createApp(App).use(router).mount("#app");
+const app = createApp(App);
+
+app.use(router);
+app.use(Toast, {
+  position: "top-right",
+  timeout: 3000,
+  closeOnClick: true,
+  pauseOnHover: true,
+});
+
+app.mount("#app");

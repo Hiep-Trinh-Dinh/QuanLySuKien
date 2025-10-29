@@ -19,6 +19,14 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+// thêm cloudinary config
+const cloudinary = require('cloudinary').v2;
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET
+});
+
 
 // POST /register
 app.post('/register', async (req, res) => {
@@ -75,9 +83,11 @@ app.post('/login', async (req, res) => {
       message: 'Đăng nhập thành công!',
       token: token,
       user: {
+        role : user.role,
         id: user.id,
         username: user.username,
-        email: user.email
+        email: user.email,
+        avatar: user.avatar_url
       }
     });
   } catch (err) {
@@ -413,18 +423,58 @@ app.get('/user-profile', async (req, res) => {
 // PUT /update-profile - Cập nhật thông tin user
 app.put('/update-profile', async (req, res) => {
   try {
-    const { user_id, username, full_name, phone, avatar_url } = req.body;
-    
-    if (!user_id) {
-      return res.status(400).json({ message: 'Thiếu user_id!' });
+    const { user_id, username, full_name, phone, avatar_data } = req.body;
+    if (!user_id) return res.status(400).json({ message: 'Thiếu user_id!' });
+
+    const [users] = await pool.query('SELECT avatar_url FROM users WHERE id = ?', [user_id]);
+    const currentAvatar = users?.[0]?.avatar_url || null;
+
+    let newAvatarUrl = null;
+
+    if (avatar_data) {
+      // Xóa avatar cũ nếu là Cloudinary
+      try {
+        if (currentAvatar && currentAvatar.includes('res.cloudinary.com')) {
+          // Lấy public_id (bao gồm folder) từ URL, loại bỏ extension và version nếu có
+          const match = currentAvatar.match(/\/upload\/(?:v\d+\/)?(.+)\.(?:jpg|jpeg|png|gif|webp|svg|bmp)/i);
+          const publicIdRaw = match ? match[1] : null;
+          const publicId = publicIdRaw ? decodeURIComponent(publicIdRaw) : null;
+          if (publicId) {
+            await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+          }
+        }
+      } catch (err) {
+        console.warn('Không thể xóa avatar cũ trên Cloudinary (tiếp tục):', err.message || err);
+      }
+
+      // Upload avatar mới vào folder đúng như bạn đặt (ví dụ "Media Library/Assets")
+      const uploadResult = await cloudinary.uploader.upload(avatar_data, {
+        folder: 'Media Library/Assets',
+        overwrite: true,
+        resource_type: 'image'
+      });
+      console.log('Upload avatar mới thành công:', uploadResult.secure_url);
+      newAvatarUrl = uploadResult.secure_url;
+
     }
-    
-    await pool.query(
-      'UPDATE users SET username = ?, full_name = ?, phone = ?, avatar_url = ? WHERE id = ?',
-      [username, full_name, phone, avatar_url, user_id]
-    );
-    
-    res.json({ message: 'Cập nhật thông tin thành công!' });
+
+    let query = 'UPDATE users SET username = ?, full_name = ?, phone = ?';
+    const params = [username, full_name, phone];
+
+    if (newAvatarUrl) {
+      query += ', avatar_url = ?';
+      params.push(newAvatarUrl);
+    }
+
+    query += ' WHERE id = ?';
+    params.push(user_id);
+
+    await pool.query(query, params);
+
+    const responsePayload = { message: 'Cập nhật thông tin thành công!' };
+    if (newAvatarUrl) responsePayload.avatar_url = newAvatarUrl;
+
+    res.json(responsePayload);
   } catch (err) {
     console.error('Error in /update-profile:', err);
     res.status(500).json({ message: 'Lỗi server khi cập nhật thông tin.' });

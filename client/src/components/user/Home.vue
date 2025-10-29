@@ -75,7 +75,7 @@ const featuredEvents = ref([
     date: "Dec 25, 2023",
     time: "6:00 PM",
     location: "Nhà hát lớn Hà Nội",
-    image: "https://via.placeholder.com/400x200?text=Music+Festival",
+    image: "../src/assets/img/—Pngtree—a massive crowd of people_16139729.png",
   },
   {
     id: 2,
@@ -83,7 +83,7 @@ const featuredEvents = ref([
     date: "Dec 28, 2024",
     time: "9:30 AM",
     location: "Trung tâm hội nghị Quốc Gia",
-    image: "https://via.placeholder.com/400x200?text=Tech+Conference",
+    image: "../src/assets/img/—Pngtree—a massive crowd of people_16139729.png",
   },
   {
     id: 3,
