@@ -36,7 +36,13 @@ INSERT INTO events (title, description, category_id, venue_id, start_time, end_t
 VALUES
 ('Summer Music Festival 2024', 'Lễ hội âm nhạc mùa hè với nghệ sĩ quốc tế.', 1, 1, '2024-07-15 19:00:00', '2024-07-15 23:00:00', 1, null, 'upcoming'),
 ('Tech Conference 2024', 'Hội nghị công nghệ lớn nhất năm.', 2, 2, '2024-08-20 09:00:00', '2024-08-20 17:00:00', 1, null, 'active'),
-('Football Final', 'Chung kết giải bóng đá.', 3, 1, '2024-06-30 19:30:00', '2024-06-30 21:30:00', 2, null, 'ended');
+('Football Final', 'Chung kết giải bóng đá.', 3, 1, '2024-06-30 19:30:00', '2024-06-30 21:30:00', 2, null, 'ended'),
+('Acoustic Night Live', 'Đêm nhạc acoustic ấm cúng với các nghệ sĩ trẻ.', 1, 1, '2024-10-10 19:00:00', '2024-10-10 21:30:00', 1, null, 'upcoming'),
+('AI & Data Summit', 'Hội nghị về Trí tuệ nhân tạo và Dữ liệu lớn.', 2, 2, '2024-11-05 08:30:00', '2024-11-05 17:30:00', 1, null, 'upcoming'),
+('City Marathon', 'Giải chạy Marathon thường niên của thành phố.', 3, 2, '2024-12-01 06:00:00', '2024-12-01 12:00:00', 1, null, 'upcoming'),
+('Tech Startup Demo Day', 'Ngày demo sản phẩm cho các startup công nghệ.', 2, 1, '2024-12-15 13:00:00', '2024-12-15 18:00:00', 1, null, 'upcoming'),
+('New Year Concert 2025', 'Đêm nhạc chào năm mới với nhiều nghệ sĩ nổi tiếng.', 1, 1, '2024-12-31 20:00:00', '2025-01-01 00:30:00', 1, null, 'upcoming');
+
 
 -- 5. ARTISTS
 -- =========================

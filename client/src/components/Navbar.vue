@@ -10,8 +10,10 @@
     <div class="navbar-right">
       <template v-if="user">
         <template v-if="admin">
+          <router-link to="/create-event" class="create-event-link">
+            <button class="create-event-btn" @click.stop>Create Event</button>
+          </router-link>
           <div class="avatar-wrapper" @click="toggleMenu">
-            <button class="create-event-btn">Create Event</button>
             <img :src="userAvatar" alt="avatar" class="avatar" />
           </div>
           <div v-if="menuOpen" class="user-menu">
