@@ -35,6 +35,7 @@ const emit = defineEmits(["select"]); // <- thêm emit select
 const router = useRouter();
 const goDetail = () => {
   router.push({ name: "TicketInformation", params: { id: props.ticket.id } });
+
 };
 
 const formatDate = (d) =>

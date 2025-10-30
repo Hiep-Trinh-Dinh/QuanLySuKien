@@ -245,22 +245,46 @@ app.get('/user-tickets', async (req, res) => {
     res.status(500).json({ message: 'Lỗi server khi lấy vé của user.' });
   }
 });
-// GET /ticket-detail - Lấy chi tiết vé
 app.get("/ticket-detail", async (req, res) => {
   try {
     const { ticket_id } = req.query;
-    const [rows] = await pool.query(`
-      SELECT t.*, e.title, e.description, e.start_time, e.end_time, v.name AS venue_name
+
+    if (!ticket_id) return res.status(400).json({ error: "Missing ticket_id" });
+
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        t.id AS ticket_id,
+        t.seat_number,
+        t.Type,
+        t.price,
+        t.status AS ticket_status,
+        t.qr_code,
+        e.title,
+        e.description,
+        e.start_time,
+        e.end_time,
+        v.name AS venue_name,
+        v.address AS venue_address
       FROM tickets t
       JOIN events e ON t.event_id = e.id
       JOIN venues v ON e.venue_id = v.id
       WHERE t.id = ?
-    `, [ticket_id]);
+      `,
+      [ticket_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Ticket not found" });
+    }
+
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: "Lỗi truy vấn vé" });
+    console.error("SQL Error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
+
 
 // POST /purchase-ticket - Mua vé
 app.post('/purchase-ticket', async (req, res) => {
