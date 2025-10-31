@@ -83,39 +83,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import axios from 'axios';
-import { fetchEvents } from '../scripts/ExploreEvents.js'
+import { useExploreEvents } from '../scripts/ExploreEvents.js';
 
-const events = ref([])
-const categories = ref([]);
-const searchText = ref("");
-
-onMounted(() => {
-  fetchEvents(events);
-  fetchCategories();
-})
-
-const filteredSortedEvents = computed(() => {
-  const term = searchText.value.trim().toLowerCase();
-  // nếu không nhập từ khóa thì trả toàn bộ, sắp theo thời gian
-  const list = !term ? events.value : events.value.filter(e => {
-    const title = (e.title || '').toLowerCase();
-    const dateISO = new Date(e.start_time).toISOString().slice(0,10); // yyyy-mm-dd
-    const dateVI = new Date(e.start_time).toLocaleDateString('vi-VN'); // dd/mm/yyyy
-    return title.includes(term) || dateISO.includes(term) || dateVI.includes(term);
-  });
-  return [...list].sort((a,b) => new Date(a.start_time) - new Date(b.start_time));
-});
-
-async function fetchCategories() {
-  try {
-    const res = await axios.get('http://localhost:3000/categories');
-    categories.value = res.data;
-  } catch (e) {
-    categories.value = [];
-  }
-}
+const {
+  events,
+  categories,
+  searchText,
+  filteredSortedEvents
+} = useExploreEvents();
 </script>
 
 <style src="../assets/css/explore-events.css"></style>

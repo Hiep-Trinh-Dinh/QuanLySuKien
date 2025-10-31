@@ -256,3 +256,126 @@
     margin-top: 0;
   }
 }
+
+/* === Cart (giỏ hàng) styles === */
+.add-cart-btn {
+  width: 100%;
+  background: #f1eaff;
+  color: #6c5ce7;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.add-cart-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.add-cart-btn:hover:not(:disabled) {
+  background: #e8ddff;
+  box-shadow: 0 2px 10px rgba(108,92,231,0.12);
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(160, 120, 255, 0.04);
+}
+.cart-table thead {
+  background: #f5f1ff;
+}
+.cart-table th,
+.cart-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  font-size: 0.98rem;
+}
+.cart-table th {
+  font-weight: 700;
+  color: #333;
+}
+.cart-table td:last-child,
+.cart-table th:last-child {
+  text-align: right;
+}
+.cart-table tr:last-child td {
+  border-bottom: none;
+}
+.cart-table input[type="number"] {
+  width: 56px;
+  padding: 6px 8px;
+  border: 1.5px solid #bbb;
+  border-radius: 6px;
+  background: #fafaff;
+  font-size: 0.95rem;
+  outline: none;
+  text-align: center;
+}
+.cart-table input[type="number"]:focus {
+  border-color: #6c5ce7;
+}
+.cart-table button {
+  background: #ffe9ec;
+  color: #e11d48;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.cart-table button:hover {
+  background: #ffd5db;
+}
+
+/* === Modal styles === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.modal-box {
+  width: 92%;
+  max-width: 460px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  padding: 18px 20px;
+}
+.modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #2b2b2b;
+}
+.modal-body {
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 16px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.modal-btn {
+  background: #6c5ce7;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modal-btn:hover {
+  background: #584bd6;
+}

@@ -12,7 +12,7 @@ app.use(express.json());
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASS || '',
+  password: process.env.DB_PASS || 'root',
   database: process.env.DB_NAME || 'vue_todo',
   waitForConnections: true,
   connectionLimit: 10,
@@ -422,10 +422,21 @@ app.get("/ticket-detail", async (req, res) => {
 // POST /purchase-ticket - Mua vé
 app.post('/purchase-ticket', async (req, res) => {
   try {
-    const { event_id, user_id, ticket_type, quantity, total_amount, payment_method } = req.body;
-    
-    if (!event_id || !user_id || !ticket_type || !quantity || !total_amount) {
+    const { event_id, user_id, ticket_type, quantity, total_amount, payment_method, tickets } = req.body;
+
+    // Cho phép 2 kiểu payload:
+    // 1) Cũ: (ticket_type, quantity, total_amount)
+    // 2) Mới: tickets = [{ type, quantity, price }...]
+
+    if (!event_id || !user_id) {
       return res.status(400).json({ message: 'Thiếu thông tin bắt buộc!' });
+    }
+
+    const isCartMode = Array.isArray(tickets) && tickets.length > 0;
+    if (!isCartMode) {
+      if (!ticket_type || !quantity || !total_amount) {
+        return res.status(400).json({ message: 'Thiếu thông tin bắt buộc!' });
+      }
     }
 
     // Kiểm tra user tồn tại
@@ -451,38 +462,91 @@ app.post('/purchase-ticket', async (req, res) => {
     );
     const soldCount = Number(soldCountRows[0].sold) || 0;
 
+    // Xác định tổng quantity cần mua
+    let totalQty = 0;
+    if (isCartMode) {
+      totalQty = tickets.reduce((sum, t) => sum + (Number(t.quantity) || 0), 0);
+    } else {
+      totalQty = Number(quantity) || 0;
+    }
+    if (totalQty <= 0) {
+      return res.status(400).json({ message: 'Số lượng vé không hợp lệ!' });
+    }
+
     // Kiểm tra còn đủ chỗ không
     const remaining = Math.max(venueCapacity - soldCount, 0);
-    if (remaining <= 0 || remaining < quantity) {
+    if (remaining <= 0 || remaining < totalQty) {
       return res.status(400).json({ message: `Hết vé hoặc không đủ số lượng. Còn lại: ${remaining}` });
     }
 
-    // Tạo các vé mới với seat_number theo thứ tự mua (soldCount + i + 1)
-    const unitPrice = total_amount / quantity;
     const now = new Date();
     const qrBase = `QR${Date.now()}`;
 
-    const ticketValues = [];
-    for (let i = 0; i < quantity; i++) {
-      const seatNumber = soldCount + i + 1; // thứ tự mua
-      const qrCode = `${qrBase}${i}`;
-      ticketValues.push([event_id, user_id, seatNumber, ticket_type, unitPrice, 'sold', qrCode, now]);
+    if (!isCartMode) {
+      // Payload cũ - giữ nguyên hành vi
+      const unitPrice = Number(total_amount) / Number(quantity);
+      const ticketValues = [];
+      for (let i = 0; i < Number(quantity); i++) {
+        const seatNumber = soldCount + i + 1;
+        const qrCode = `${qrBase}${i}`;
+        ticketValues.push([event_id, user_id, seatNumber, ticket_type, unitPrice, 'sold', qrCode, now]);
+      }
+      const placeholders = ticketValues.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
+      const [insertTickets] = await pool.query(
+        `INSERT INTO tickets (event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES ${placeholders}`,
+        ticketValues.flat()
+      );
+      const firstTicketId = insertTickets.insertId;
+      const insertedCount = insertTickets.affectedRows || Number(quantity);
+      const payMethod = payment_method || 'credit_card';
+      const payments = [];
+      for (let i = 0; i < insertedCount; i++) {
+        const ticketId = firstTicketId + i;
+        payments.push([ticketId, user_id, unitPrice, payMethod, 'paid', now]);
+      }
+      const payPlaceholders = payments.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
+      await pool.query(
+        `INSERT INTO payments (ticket_id, user_id, amount, payment_method, status, paid_at) VALUES ${payPlaceholders}`,
+        payments.flat()
+      );
+      return res.json({ message: 'Mua vé và ghi nhận thanh toán thành công!', tickets_created: insertedCount, remaining_after: remaining - insertedCount });
     }
 
-    const placeholders = ticketValues.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
+    // Payload mới - nhiều loại vé một lần
+    let nextSeat = soldCount + 1;
+    const values = [];
+    const placeholders = [];
+    for (const item of tickets) {
+      const type = item.type || 'standard';
+      const qty = Number(item.quantity) || 0;
+      const price = Number(item.price) || 0;
+      for (let i = 0; i < qty; i++) {
+        const seatNumber = nextSeat++;
+        const qrCode = `${qrBase}-${type}-${i}`;
+        values.push(event_id, user_id, seatNumber, type, price, 'sold', qrCode, now);
+        placeholders.push('(?, ?, ?, ?, ?, ?, ?, ?)');
+      }
+    }
     const [insertTickets] = await pool.query(
-      `INSERT INTO tickets (event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES ${placeholders}`,
-      ticketValues.flat()
+      `INSERT INTO tickets (event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES ${placeholders.join(', ')}`,
+      values
     );
-
-    // Ghi nhận payments
     const firstTicketId = insertTickets.insertId;
-    const insertedCount = insertTickets.affectedRows || quantity;
+    const insertedCount = insertTickets.affectedRows || totalQty;
     const payMethod = payment_method || 'credit_card';
     const payments = [];
+    // Lặp lại theo số lượng vé đã chèn, payment amount nên theo từng vé (price tương ứng)
+    // Do ở trên không giữ riêng từng price theo id, ta tính lại từ tickets theo cùng thứ tự
+    const perTicketAmounts = [];
+    for (const item of tickets) {
+      const qty = Number(item.quantity) || 0;
+      const price = Number(item.price) || 0;
+      for (let i = 0; i < qty; i++) perTicketAmounts.push(price);
+    }
     for (let i = 0; i < insertedCount; i++) {
       const ticketId = firstTicketId + i;
-      payments.push([ticketId, user_id, unitPrice, payMethod, 'paid', now]);
+      const amount = perTicketAmounts[i] || 0;
+      payments.push([ticketId, user_id, amount, payMethod, 'paid', now]);
     }
     const payPlaceholders = payments.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
     await pool.query(

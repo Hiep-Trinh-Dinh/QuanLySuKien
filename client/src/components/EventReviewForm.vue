@@ -46,81 +46,39 @@
           </div>
         </div>
       </div>
+
+      <!-- Modal thông báo -->
+      <div v-if="showDialog" class="modal-overlay">
+        <div class="modal-box">
+          <div class="modal-title">{{ dialogTitle }}</div>
+          <div class="modal-body">{{ dialogMessage }}</div>
+          <div class="modal-actions">
+            <button class="modal-btn" @click="closeDialog">Đóng</button>
+          </div>
+        </div>
+      </div>
     </div>
 </template>
   
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { eventReview } from "../scripts/EventReview.js";
+import { useEventReview } from "../scripts/EventReview.js";
 
-const route = useRoute();
-const router = useRouter();
-const eventId = ref(route.query.id || 1);
-const eventInfo = ref(null);
-
-const rating = ref(0);
-const name = ref("");
-const email = ref("");
-const phone = ref("");
-const comment = ref("");
-const user = ref(null);
-const isLoggedIn = ref(false);
-
-onMounted(async () => {
-  const raw = localStorage.getItem("user");
-  user.value = raw ? JSON.parse(raw) : null;
-  isLoggedIn.value = !!user.value;
-  if (user.value) {
-    email.value = user.value.email || "";
-    name.value = user.value.username || "";
-  }
-  
-  // Fetch thông tin event để hiển thị
-  try {
-    const res = await fetch(`http://localhost:3000/events/${eventId.value}`);
-    if (res.ok) {
-      eventInfo.value = await res.json();
-    }
-  } catch (e) {
-    console.error("Không thể tải thông tin sự kiện:", e);
-  }
-});
-
-function setRating(star) {
-  rating.value = star;
-}
-
-async function handleSubmit() {
-  if (!isLoggedIn.value) {
-    alert("Bạn cần đăng nhập để gửi đánh giá!");
-    return;
-  }
-  
-  if (rating.value === 0) {
-    alert("Vui lòng chọn số sao đánh giá!");
-    return;
-  }
-  
-  
-  const result = await eventReview(
-    eventId.value,
-    user.value.id,
-    rating.value,
-    name.value,
-    email.value,
-    phone.value,
-    comment.value || ''
-  );
-  
-  if (result) {
-    alert("Đã gửi đánh giá thành công!");
-    // Redirect về trang chi tiết event
-    router.push(`/event-detail/${eventId.value}`);
-  } else {
-    alert("Có lỗi xảy ra khi gửi đánh giá!");
-  }
-}
+const {
+  eventInfo,
+  rating,
+  name,
+  email,
+  phone,
+  comment,
+  isLoggedIn,
+  setRating,
+  handleSubmit,
+  // dialog
+  showDialog,
+  dialogTitle,
+  dialogMessage,
+  closeDialog
+} = useEventReview();
 </script>
   
 <style src="../assets/css/event-review.css"></style>
