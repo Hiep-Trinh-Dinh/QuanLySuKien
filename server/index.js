@@ -120,7 +120,7 @@ app.get('/events', async (req, res) => {
 app.get('/events/:id', async (req, res) => {
   try {
     const [events] = await pool.query(
-      `SELECT e.*, c.name as category_name, v.name as venue_name, v.address as venue_address,
+      `SELECT e.*, c.name as category_name, v.name as venue_name, v.address as venue_address, v.capacity as venue_capacity,
         IFNULL(u.full_name, u.username) as event_creator_name
        FROM events e
        LEFT JOIN categories c ON e.category_id = c.id
@@ -216,6 +216,130 @@ app.get('/event-lineup', async (req, res) => {
   }
 });
 
+// ------------------------
+// ADMIN: Artists (CRUD) & Event Lineup management
+// ------------------------
+
+// GET /admin/artists - list artists
+app.get('/admin/artists', async (req, res) => {
+  try {
+    const [artists] = await pool.query('SELECT * FROM artists ORDER BY name');
+    res.json(artists);
+  } catch (err) {
+    console.error('Error in GET /admin/artists', err);
+    res.status(500).json({ message: 'Lỗi server khi lấy danh sách nghệ sĩ.' });
+  }
+});
+
+// POST /admin/artists - create artist (accepts avatar as data URL or url)
+app.post('/admin/artists', async (req, res) => {
+  try {
+    let { name, bio, avatar_url } = req.body;
+    if (!name) return res.status(400).json({ message: 'Thiếu tên nghệ sĩ.' });
+
+    if (avatar_url && typeof avatar_url === 'string' && avatar_url.startsWith('data:')) {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(avatar_url, {
+          folder: 'Media Library/Artists',
+          resource_type: 'image',
+        });
+        avatar_url = uploadResult.secure_url;
+      } catch (err) {
+        console.error('Failed to upload artist avatar to Cloudinary:', err);
+        return res.status(500).json({ message: 'Lỗi khi upload ảnh nghệ sĩ.' });
+      }
+    }
+
+    const [result] = await pool.query('INSERT INTO artists (name, bio, avatar_url) VALUES (?, ?, ?)', [name, bio || null, avatar_url || null]);
+    res.json({ message: 'Tạo nghệ sĩ thành công', id: result.insertId });
+  } catch (err) {
+    console.error('Error in POST /admin/artists', err);
+    res.status(500).json({ message: 'Lỗi server khi tạo nghệ sĩ.' });
+  }
+});
+
+// PUT /admin/artists/:id - update artist
+app.put('/admin/artists/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    let { name, bio, avatar_url } = req.body;
+    if (!name) return res.status(400).json({ message: 'Thiếu tên nghệ sĩ.' });
+
+    if (avatar_url && typeof avatar_url === 'string' && avatar_url.startsWith('data:')) {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(avatar_url, {
+          folder: 'Media Library/Artists',
+          resource_type: 'image',
+        });
+        avatar_url = uploadResult.secure_url;
+      } catch (err) {
+        console.error('Failed to upload artist avatar to Cloudinary:', err);
+        return res.status(500).json({ message: 'Lỗi khi upload ảnh nghệ sĩ.' });
+      }
+    }
+
+    await pool.query('UPDATE artists SET name = ?, bio = ?, avatar_url = ? WHERE id = ?', [name, bio || null, avatar_url || null, id]);
+    res.json({ message: 'Cập nhật nghệ sĩ thành công' });
+  } catch (err) {
+    console.error('Error in PUT /admin/artists/:id', err);
+    res.status(500).json({ message: 'Lỗi server khi cập nhật nghệ sĩ.' });
+  }
+});
+
+// DELETE /admin/artists/:id - delete artist
+app.delete('/admin/artists/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    // optional: check and remove references in event_lineup
+    await pool.query('DELETE FROM event_lineup WHERE artist_id = ?', [id]);
+    await pool.query('DELETE FROM artists WHERE id = ?', [id]);
+    res.json({ message: 'Xóa nghệ sĩ thành công' });
+  } catch (err) {
+    console.error('Error in DELETE /admin/artists/:id', err);
+    res.status(500).json({ message: 'Lỗi server khi xóa nghệ sĩ.' });
+  }
+});
+
+// Event lineup CRUD for admin
+// POST /admin/event-lineup - add artist to event
+app.post('/admin/event-lineup', async (req, res) => {
+  try {
+    const { event_id, artist_id, performance_time } = req.body;
+    if (!event_id || !artist_id) return res.status(400).json({ message: 'Thiếu event_id hoặc artist_id.' });
+    const [result] = await pool.query('INSERT INTO event_lineup (event_id, artist_id, performance_time) VALUES (?, ?, ?)', [event_id, artist_id, performance_time || null]);
+    res.json({ message: 'Thêm lineup thành công', id: result.insertId });
+  } catch (err) {
+    console.error('Error in POST /admin/event-lineup', err);
+    res.status(500).json({ message: 'Lỗi server khi thêm lineup.' });
+  }
+});
+
+// PUT /admin/event-lineup/:id - update lineup entry
+app.put('/admin/event-lineup/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { artist_id, performance_time } = req.body;
+    if (!artist_id) return res.status(400).json({ message: 'Thiếu artist_id.' });
+    await pool.query('UPDATE event_lineup SET artist_id = ?, performance_time = ? WHERE id = ?', [artist_id, performance_time || null, id]);
+    res.json({ message: 'Cập nhật lineup thành công' });
+  } catch (err) {
+    console.error('Error in PUT /admin/event-lineup/:id', err);
+    res.status(500).json({ message: 'Lỗi server khi cập nhật lineup.' });
+  }
+});
+
+// DELETE /admin/event-lineup/:id - remove lineup entry
+app.delete('/admin/event-lineup/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    await pool.query('DELETE FROM event_lineup WHERE id = ?', [id]);
+    res.json({ message: 'Xóa lineup thành công' });
+  } catch (err) {
+    console.error('Error in DELETE /admin/event-lineup/:id', err);
+    res.status(500).json({ message: 'Lỗi server khi xóa lineup.' });
+  }
+});
+
 app.get('/tickets', async (req, res) => {
   try {
     const event_id = req.query.event_id;
@@ -258,28 +382,75 @@ app.get('/user-tickets', async (req, res) => {
 // POST /purchase-ticket - Mua vé
 app.post('/purchase-ticket', async (req, res) => {
   try {
-    const { event_id, user_id, ticket_type, quantity, total_amount } = req.body;
+    const { event_id, user_id, ticket_type, quantity, total_amount, payment_method } = req.body;
     
     if (!event_id || !user_id || !ticket_type || !quantity || !total_amount) {
       return res.status(400).json({ message: 'Thiếu thông tin bắt buộc!' });
     }
-    
-    // Tạo vé mới với QR code
-    const ticketData = [];
-    for (let i = 0; i < quantity; i++) {
-      const qrCode = `QR${Date.now()}${i}`;
-      ticketData.push([event_id, user_id, i + 1, ticket_type, total_amount / quantity, 'sold', qrCode, new Date()]);
+
+    // Kiểm tra user tồn tại
+    const [users] = await pool.query('SELECT id FROM users WHERE id = ?', [user_id]);
+    if (users.length === 0) {
+      return res.status(400).json({ message: 'User không tồn tại. Vui lòng đăng nhập lại.' });
     }
-    
-    const placeholders = ticketData.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
-    const values = ticketData.flat();
-    
-    await pool.query(
-      `INSERT INTO tickets (event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES ${placeholders}`,
-      values
+
+    // Lấy thông tin event và capacity của venue
+    const [eventRows] = await pool.query(
+      `SELECT e.id, v.capacity FROM events e LEFT JOIN venues v ON e.venue_id = v.id WHERE e.id = ?`,
+      [event_id]
     );
-    
-    res.json({ message: 'Mua vé thành công!' });
+    if (eventRows.length === 0) {
+      return res.status(404).json({ message: 'Không tìm thấy sự kiện!' });
+    }
+    const venueCapacity = Number(eventRows[0].capacity) || 0;
+
+    // Đếm số vé đã bán của sự kiện (mọi loại)
+    const [soldCountRows] = await pool.query(
+      'SELECT COUNT(*) as sold FROM tickets WHERE event_id = ? AND status = "sold"',
+      [event_id]
+    );
+    const soldCount = Number(soldCountRows[0].sold) || 0;
+
+    // Kiểm tra còn đủ chỗ không
+    const remaining = Math.max(venueCapacity - soldCount, 0);
+    if (remaining <= 0 || remaining < quantity) {
+      return res.status(400).json({ message: `Hết vé hoặc không đủ số lượng. Còn lại: ${remaining}` });
+    }
+
+    // Tạo các vé mới với seat_number theo thứ tự mua (soldCount + i + 1)
+    const unitPrice = total_amount / quantity;
+    const now = new Date();
+    const qrBase = `QR${Date.now()}`;
+
+    const ticketValues = [];
+    for (let i = 0; i < quantity; i++) {
+      const seatNumber = soldCount + i + 1; // thứ tự mua
+      const qrCode = `${qrBase}${i}`;
+      ticketValues.push([event_id, user_id, seatNumber, ticket_type, unitPrice, 'sold', qrCode, now]);
+    }
+
+    const placeholders = ticketValues.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
+    const [insertTickets] = await pool.query(
+      `INSERT INTO tickets (event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES ${placeholders}`,
+      ticketValues.flat()
+    );
+
+    // Ghi nhận payments
+    const firstTicketId = insertTickets.insertId;
+    const insertedCount = insertTickets.affectedRows || quantity;
+    const payMethod = payment_method || 'credit_card';
+    const payments = [];
+    for (let i = 0; i < insertedCount; i++) {
+      const ticketId = firstTicketId + i;
+      payments.push([ticketId, user_id, unitPrice, payMethod, 'paid', now]);
+    }
+    const payPlaceholders = payments.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
+    await pool.query(
+      `INSERT INTO payments (ticket_id, user_id, amount, payment_method, status, paid_at) VALUES ${payPlaceholders}`,
+      payments.flat()
+    );
+
+    res.json({ message: 'Mua vé và ghi nhận thanh toán thành công!', tickets_created: insertedCount, remaining_after: remaining - insertedCount });
   } catch (err) {
     console.error('Error in /purchase-ticket:', err);
     res.status(500).json({ message: 'Lỗi server khi mua vé.' });
@@ -356,21 +527,76 @@ app.get('/support-tickets', async (req, res) => {
 
 // POST /create-event - Tạo sự kiện mới (admin only)
 app.post('/create-event', async (req, res) => {
+  let connection;
   try {
-    const { title, description, category_id, venue_id, start_time, end_time, created_by, image_url } = req.body;
-    
+    const { title, description, category_id, venue_id, start_time, end_time, created_by } = req.body;
+    let { image_url } = req.body;
+
     if (!title || !start_time || !end_time || !created_by) {
       return res.status(400).json({ message: 'Thiếu thông tin sự kiện!' });
     }
-    
-    await pool.query(
+
+    // Start transaction: create event and optional tickets together
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // If client sent a data URL for image (base64), upload it to Cloudinary and replace image_url
+    if (image_url && typeof image_url === 'string' && image_url.startsWith('data:')) {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(image_url, {
+          folder: 'Media Library/Assets',
+          resource_type: 'image',
+        });
+        image_url = uploadResult.secure_url;
+        console.log('Uploaded event image to Cloudinary:', image_url);
+      } catch (err) {
+        console.error('Failed to upload event image to Cloudinary:', err);
+        await connection.rollback();
+        connection.release();
+        return res.status(500).json({ message: 'Lỗi khi upload hình ảnh sự kiện.' });
+      }
+    }
+
+    // Insert the event
+    const [insertResult] = await connection.query(
       'INSERT INTO events (title, description, category_id, venue_id, start_time, end_time, created_by, image_url, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [title, description, category_id, venue_id, start_time, end_time, created_by, image_url, 'upcoming']
     );
-    
-    res.json({ message: 'Tạo sự kiện thành công!' });
+
+    const eventId = insertResult.insertId;
+
+    // If tickets array provided, create ticket rows for the new event
+    const tickets = Array.isArray(req.body.tickets) ? req.body.tickets : null;
+    console.log('Tickets to create:', tickets);
+    let ticketsCreated = 0;
+    if (tickets && tickets.length) {
+      // Next seat number starts at 1 (new event has none)
+      let nextSeat = 1;
+
+      const values = [];
+      const placeholders = [];
+      for (const t of tickets) {
+        const type = t.type || 'standard';
+        const price = typeof t.price !== 'undefined' ? Number(t.price) : 0;
+        const status = t.status || 'available';
+        const seatNumber = nextSeat++;
+        // event_id, user_id (null), seat_number, Type, price, status, qr_code, purchased_at
+        values.push(eventId, null, seatNumber, type, price, status, null, null);
+        placeholders.push('(?, ?, ?, ?, ?, ?, ?, ?)');
+      }
+
+      const sql = `INSERT INTO tickets (event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES ${placeholders.join(', ')}`;
+      const [ticketInsert] = await connection.query(sql, values);
+      ticketsCreated = ticketInsert.affectedRows || tickets.length;
+    }
+
+    await connection.commit();
+    if (connection) connection.release();
+
+    res.json({ message: 'Tạo sự kiện thành công!', eventId, ticketsCreated });
   } catch (err) {
     console.error('Error in /create-event:', err);
+    try { if (connection) { await connection.rollback(); connection.release(); } } catch (e) {}
     res.status(500).json({ message: 'Lỗi server khi tạo sự kiện.' });
   }
 });

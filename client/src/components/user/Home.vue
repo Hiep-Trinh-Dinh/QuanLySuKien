@@ -46,16 +46,22 @@
           <strong>{{ event.title }}</strong>
           <div class="small text-muted">{{ event.date }} - {{ event.location }}</div>
         </div>
-        <button class="btn btn-outline-primary btn-sm">Chi tiết</button>
+        <button class="btn btn-outline-primary btn-sm" @click="router.push(`/event-detail/${event.id}`)">Chi tiết</button>
       </li>
     </ul>
   </div>
+
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import EventCard from "../card/EventCard.vue";
 import CategoryCard from "../card/CategoryCard.vue";
+import { fetchEvents } from "../../scripts/ExploreEvents.js";
+
+
+const router = useRouter()
 
 const search = ref("");
 
@@ -67,55 +73,52 @@ const categories = ref([
   { id: 4, name: "Nghệ thuật", desc: "Triển lãm, biểu diễn", icon: "bi-palette-fill" },
 ]);
 
-// Sự kiện nổi bật
-const featuredEvents = ref([
-  {
-    id: 1,
-    title: "Summer Music Festival",
-    date: "Dec 25, 2023",
-    time: "6:00 PM",
-    location: "Nhà hát lớn Hà Nội",
-    image: "../src/assets/img/—Pngtree—a massive crowd of people_16139729.png",
-  },
-  {
-    id: 2,
-    title: "Hội nghị công nghệ 2025",
-    date: "Dec 28, 2024",
-    time: "9:30 AM",
-    location: "Trung tâm hội nghị Quốc Gia",
-    image: "../src/assets/img/—Pngtree—a massive crowd of people_16139729.png",
-  },
-  {
-    id: 3,
-    title: "Giải vô địch bóng đá",
-    date: "Feb 5, 2024",
-    time: "7:00 PM",
-    location: "Sân vận động Mỹ Đình",
-    image: "../src/assets/img/—Pngtree—a massive crowd of people_16139729.png",
-  },
-]);
+// All events fetched from backend
+const events = ref([]);
+
+// Sự kiện nổi bật (show top 3)
+const featuredEvents = ref([]);
 
 // Sự kiện sắp diễn ra
-const upcomingEvents = ref([
-  {
-    id: 1,
-    title: "Khai mạc triển lãm nghệ thuật",
-    date: "Dec 10, 2025",
-    location: "Bảo tàng Mỹ thuật",
-  },
-  {
-    id: 2,
-    title: "Sự kiện kết nối kinh doanh",
-    date: "Dec 12, 2025",
-    location: "Khách sạn Melia",
-  },
-  {
-    id: 3,
-    title: "Đêm nhạc Jazz",
-    date: "Dec 15, 2025",
-    location: "CLB Âm nhạc Hà Nội",
-  },
-]);
+const upcomingEvents = ref([]);
+
+// Helper: transform backend event into a small view model
+function transformEvent(e) {
+  const date = e.start_time ? new Date(e.start_time).toLocaleDateString('vi-VN') : (e.date || '');
+  const location = e.venue_name || e.venue_address || e.location || '';
+  return {
+    id: e.id,
+    title: e.title,
+    date,
+    time: e.start_time ? new Date(e.start_time).toLocaleTimeString('vi-VN') : (e.time || ''),
+    location,
+    image: e.image_url || null,
+    raw: e,
+  };
+}
+
+// Load events from backend and populate featured/upcoming lists
+async function loadEvents() {
+  try {
+    await fetchEvents(events);
+    // map to view models
+    const mapped = events.value.map(transformEvent);
+    console.log('Mapped events:', mapped);
+    // upcoming: sort by date asc and take next 6
+    upcomingEvents.value = mapped
+      .slice()
+      .sort((a, b) => new Date(a.raw.start_time || a.date) - new Date(b.raw.start_time || b.date))
+      .slice(0, 6);
+    // featured: pick first 3
+    featuredEvents.value = mapped.slice(0, 3);
+  } catch (err) {
+    console.error('Lỗi khi tải events:', err);
+  }
+}
+
+onMounted(() => {
+  loadEvents();
+});
 </script>
 
 <style>

@@ -8,6 +8,7 @@
             <h6 class="card-title">{{ event.title }}</h6>
             <p class="card-text small fw-bold fs-17 text-muted">{{ event.location }}</p>
             <button class="btn btn-sm btn-buy">Xem chi tiết</button>
+            <router-link :to="`/event-detail/${event.id}`" class="stretched-link"></router-link>
         </div>
     </div>
 </template>

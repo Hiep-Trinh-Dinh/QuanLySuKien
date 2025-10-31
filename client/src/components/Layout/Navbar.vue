@@ -3,7 +3,7 @@
     <div class="navbar-left">
       <ul class="navbar-menu">
         <router-link to="/" class="navbar-menu-link">Home</router-link>
-        <router-link to="/exlore-events" class="navbar-menu-link"> Events</router-link>
+        <router-link to="/explore-events" class="navbar-menu-link"> Events</router-link>
         <router-link to="/tickets" class="navbar-menu-link">My Tickets</router-link>
       </ul>
     </div>

@@ -6,14 +6,13 @@ import RegisterForm from "./components/RegisterForm.vue";
 import CreateEvent from "./components/admin/CreateEvent.vue";
 import Profile from "./components/user/Profile.vue";
 import EventReviewForm from "./components/EventReviewForm.vue";
-import TicketPurchase from "./components/TicketPurchase.vue";
 import TicketPayment from "./components/TicketPayment.vue";
 import ExploreEvents from "./components/ExploreEvents.vue";
 import MyTicket from "./components/MyTicket.vue";
 import CustomerSupport from "./components/CustomerSupport.vue";
 import TicketInformation from "./components/TicketInformation.vue";
 import EventDetail from "./components/user/EventDetail.vue";
-
+import AdminDashboard from "./components/admin/DashBoard.vue";
 
 const routes = [
   {
@@ -35,11 +34,15 @@ const routes = [
         props: true,
       },
       { path: "/event-detail/:id", name: "EventDetail", component: EventDetail, props: true },
-      { path: "/ticket-purchase", name: "TicketPurchase", component: TicketPurchase },
       { path: "/ticket-payment", name: "TicketPayment", component: TicketPayment },
       { path: "/event-previewform", name: "EventReviewForm", component: EventReviewForm },
-      { path: "/exlore-events", name: "ExploreEvents", component: ExploreEvents },
+      { path: "/explore-events", name: "ExploreEvents", component: ExploreEvents },
     ],
+  },
+  {
+    path: "/dashboard",
+    name: "Admin",
+    component: AdminDashboard,
   },
 ];
 const router = createRouter({

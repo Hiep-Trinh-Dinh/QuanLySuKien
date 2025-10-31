@@ -65,13 +65,7 @@ function fileToDataUrl(file) {
 // - một File/Blob (từ <input type="file">) => chuyển sang data URL và gửi
 export async function uploadAvatar(userId, avatar) {
   try {
-    // if (!userId) throw new Error("userId is required");
-
-    // if (typeof avatar === "string") {
-    //   // gửi URL như avatar_data (server có thể upload remote URL lên Cloudinary)
-    //   return await updateUser(userId, { avatar_data: avatar });
-    // }
-
+ 
     // xử lý File/Blob từ input
     if (avatar instanceof Blob || avatar instanceof File) {
       const dataUrl = await fileToDataUrl(avatar);

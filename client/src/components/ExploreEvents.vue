@@ -4,7 +4,7 @@
     <div class="explore-search-block">
       <label class="explore-search-label">Search Events</label>
       <div class="explore-searchbar">
-        <input class="explore-search-input" type="text" placeholder="Tìm kiếm theo tên, địa điểm hoặc tên nghệ sĩ" />
+        <input v-model="searchText" class="explore-search-input" type="text" placeholder="Nhập tên sự kiện hoặc ngày (vd: 2024-12-01 hoặc 01/12/2024)" />
         <button class="explore-search-btn" type="button">
           <span class="explore-search-icon">🔍</span>
         </button>
@@ -13,25 +13,10 @@
     <div class="explore-section explore-categories">
       <div class="explore-section-title">Categories</div>
       <div class="explore-category-list">
-        <div class="explore-category-item">
-          <span class="explore-category-icon-bg"><span class="explore-category-icon">🎵</span></span>
-          <div class="explore-category-name">Âm nhạc</div>
-          <div class="explore-category-desc">Biểu diễn, hòa nhạc, lễ hội,...</div>
-        </div>
-        <div class="explore-category-item">
-          <span class="explore-category-icon-bg"><span class="explore-category-icon">👥</span></span>
-          <div class="explore-category-name">Hội nghị</div>
-          <div class="explore-category-desc">Hội thảo, sự kiện kinh doanh</div>
-        </div>
-        <div class="explore-category-item">
-          <span class="explore-category-icon-bg"><span class="explore-category-icon">⚽</span></span>
-          <div class="explore-category-name">Thể thao</div>
-          <div class="explore-category-desc">Trận đấu, giải đấu và cuộc thi</div>
-        </div>
-        <div class="explore-category-item">
-          <span class="explore-category-icon-bg"><span class="explore-category-icon">🖼️</span></span>
-          <div class="explore-category-name">Nghệ thuật</div>
-          <div class="explore-category-desc">Triển lãm, phòng trưng bày</div>
+        <div v-for="cat in categories" :key="cat.id" class="explore-category-item">
+          <span class="explore-category-icon-bg"><span class="explore-category-icon">🏷️</span></span>
+          <div class="explore-category-name">{{ cat.name }}</div>
+          <div class="explore-category-desc">{{ cat.description || '---' }}</div>
         </div>
       </div>
     </div>
@@ -40,7 +25,7 @@
       <div class="explore-featured-list">
         <div 
           class="explore-featured-card" 
-          v-for="event in events.slice(0, 3)" :key="event.id"
+          v-for="event in filteredSortedEvents.slice(0, 3)" :key="event.id"
         >
           <div 
             class="explore-featured-img" 
@@ -68,45 +53,18 @@
     <div class="explore-section explore-upcoming">
       <div class="explore-section-title">Sự kiện sắp tới</div>
       <div class="explore-upcoming-list">
-        <div class="explore-upcoming-item">
-          <span class="explore-upcoming-icon-bg"><span class="explore-upcoming-icon">🍴</span></span>
+        <div 
+          class="explore-upcoming-item"
+          v-for="event in filteredSortedEvents.slice(3, 8)" :key="event.id"
+        >
+          <span class="explore-upcoming-icon-bg"><span class="explore-upcoming-icon">🎫</span></span>
           <div class="explore-upcoming-content">
-            <div class="explore-upcoming-title">International Food Festival</div>
-            <div class="explore-upcoming-meta">Dec 10 • Hoan Kiem Lake</div>
+            <div class="explore-upcoming-title">{{ event.title }}</div>
+            <div class="explore-upcoming-meta">
+              {{ (new Date(event.start_time)).toLocaleDateString('vi-VN', { day:'2-digit', month:'short' }) }} • {{ event.venue_name || 'Địa điểm cập nhật sau' }}
+            </div>
           </div>
-          <span class="explore-upcoming-arrow">→</span>
-        </div>
-        <div class="explore-upcoming-item">
-          <span class="explore-upcoming-icon-bg"><span class="explore-upcoming-icon">📷</span></span>
-          <div class="explore-upcoming-content">
-            <div class="explore-upcoming-title">Photography Exhibition</div>
-            <div class="explore-upcoming-meta">Dec 12 • Vietnam Fine Arts Museum</div>
-          </div>
-          <span class="explore-upcoming-arrow">→</span>
-        </div>
-        <div class="explore-upcoming-item">
-          <span class="explore-upcoming-icon-bg"><span class="explore-upcoming-icon">🧘‍♂️</span></span>
-          <div class="explore-upcoming-content">
-            <div class="explore-upcoming-title">Yoga in the Park</div>
-            <div class="explore-upcoming-meta">Dec 18 • Lenin Park</div>
-          </div>
-          <span class="explore-upcoming-arrow">→</span>
-        </div>
-        <div class="explore-upcoming-item">
-          <span class="explore-upcoming-icon-bg"><span class="explore-upcoming-icon">👥</span></span>
-          <div class="explore-upcoming-content">
-            <div class="explore-upcoming-title">Startup Networking Night</div>
-            <div class="explore-upcoming-meta">Dec 20 • Hanoi Innovation Hub</div>
-          </div>
-          <span class="explore-upcoming-arrow">→</span>
-        </div>
-        <div class="explore-upcoming-item">
-          <span class="explore-upcoming-icon-bg"><span class="explore-upcoming-icon">🎆</span></span>
-          <div class="explore-upcoming-content">
-            <div class="explore-upcoming-title">New Year's Eve Celebration</div>
-            <div class="explore-upcoming-meta">Dec 31 • Hoan Kiem Lake</div>
-          </div>
-          <span class="explore-upcoming-arrow">→</span>
+          <router-link :to="`/event-detail/${event.id}`" class="explore-upcoming-arrow">→</router-link>
         </div>
       </div>
     </div>
@@ -125,11 +83,39 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import axios from 'axios';
 import { fetchEvents } from '../scripts/ExploreEvents.js'
 
 const events = ref([])
-onMounted(() => fetchEvents(events))
+const categories = ref([]);
+const searchText = ref("");
+
+onMounted(() => {
+  fetchEvents(events);
+  fetchCategories();
+})
+
+const filteredSortedEvents = computed(() => {
+  const term = searchText.value.trim().toLowerCase();
+  // nếu không nhập từ khóa thì trả toàn bộ, sắp theo thời gian
+  const list = !term ? events.value : events.value.filter(e => {
+    const title = (e.title || '').toLowerCase();
+    const dateISO = new Date(e.start_time).toISOString().slice(0,10); // yyyy-mm-dd
+    const dateVI = new Date(e.start_time).toLocaleDateString('vi-VN'); // dd/mm/yyyy
+    return title.includes(term) || dateISO.includes(term) || dateVI.includes(term);
+  });
+  return [...list].sort((a,b) => new Date(a.start_time) - new Date(b.start_time));
+});
+
+async function fetchCategories() {
+  try {
+    const res = await axios.get('http://localhost:3000/categories');
+    categories.value = res.data;
+  } catch (e) {
+    categories.value = [];
+  }
+}
 </script>
 
 <style src="../assets/css/explore-events.css"></style>
