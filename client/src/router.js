@@ -31,7 +31,7 @@ const routes = [
         path: "/tickets/:id",
         name: "TicketInformation",
         component: TicketInformation,
-        props: true,
+        props: true
       },
       { path: "/event-detail/:id", name: "EventDetail", component: EventDetail, props: true },
       { path: "/ticket-payment", name: "TicketPayment", component: TicketPayment },
