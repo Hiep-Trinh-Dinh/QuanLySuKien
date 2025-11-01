@@ -58,6 +58,8 @@ export function useAuth() {
       })
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))
+      localStorage.setItem('user_id', res.data.user.id);
+
       // phát sự kiện để navbar (và các nơi khác) cập nhật ngay
       window.dispatchEvent(new CustomEvent('auth:login', { detail: { user: res.data.user } }))
       alert('Đăng nhập thành công!')

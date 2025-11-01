@@ -393,6 +393,7 @@ app.get("/ticket-detail", async (req, res) => {
         t.price,
         t.status AS ticket_status,
         t.qr_code,
+        e.id AS event_id,
         e.title,
         e.description,
         e.start_time,
@@ -407,9 +408,21 @@ app.get("/ticket-detail", async (req, res) => {
       [ticket_id]
     );
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Ticket not found" });
-    }
+    if (rows.length === 0) return res.status(404).json({ error: "Ticket not found" });
+
+    // ✅ Lấy danh sách nghệ sĩ từ event_lineup
+    const [artists] = await pool.query(
+      `
+      SELECT a.name 
+      FROM event_lineup el
+      JOIN artists a ON el.artist_id = a.id
+      WHERE el.event_id = ?
+      ORDER BY el.performance_time ASC
+      `,
+      [rows[0].event_id]
+    );
+
+    rows[0].artists = artists.map(a => a.name); // trả về mảng tên nghệ sĩ
 
     res.json(rows[0]);
   } catch (err) {
@@ -417,6 +430,7 @@ app.get("/ticket-detail", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 
 // POST /purchase-ticket - Mua vé
@@ -624,6 +638,46 @@ app.get('/support-tickets', async (req, res) => {
     res.status(500).json({ message: 'Lỗi server khi lấy ticket hỗ trợ.' });
   }
 });
+//Create Support Ticket Response
+app.post("/support/create", async (req, res) => {
+  const { user_id, event_id, issue_type, subject, message, email, phone, attachment } = req.body;
+
+  try {
+    await pool.query(
+      `INSERT INTO support_tickets (user_id, event_id, issue_type, subject, message, email, phone, attachment, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', NOW())`,
+      [user_id, event_id, issue_type, subject, message, email, phone, attachment]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("LỖI TẠO SUPPORT TICKET:", err);
+    res.status(500).json({ error: "server_error" });
+  }
+});
+
+// Lấy danh sách sự kiện user đã mua để hỗ trợ
+app.get("/support/events", async (req, res) => {
+  try {
+    const { user_id } = req.query;
+
+    if (!user_id) return res.json([]);
+
+    const [rows] = await pool.query(
+      `SELECT e.id, e.title
+       FROM tickets t
+       JOIN events e ON t.event_id = e.id
+       WHERE t.user_id = ?`,
+      [user_id]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("LỖI LẤY SỰ KIỆN SUPPORT:", err);
+    res.status(500).json({ error: "server_error" });
+  }
+});
+
 
 // =========================
 // API CHO ADMIN - CREATE EVENT
