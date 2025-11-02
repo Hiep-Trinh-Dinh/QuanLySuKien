@@ -13,22 +13,27 @@
       <!-- Search -->
       <input type="text" v-model="searchQuery" placeholder="Tìm kiếm vé theo tên hoặc ngày" class="ticket-search" />
 
-      <!-- ✅ Ticket List có scroll -->
+      <!-- Ticket List -->
       <div class="ticket-list">
         <TicketCard
           v-for="ticket in filteredTickets"
           :key="ticket.ticket_id"
           :ticket="ticket"
           @select="selectTicket"
-
         />
       </div>
 
       <!-- Chi tiết vé -->
-<div v-if="selectedTicket" class="ticket-details-wrapper">
+      <div
+        v-if="selectedTicket"
+        class="ticket-details-wrapper"
+        ref="ticketWrapper"
+      >
 
-        <!-- Cột trái: Thông tin vé -->
+        <!-- LEFT -->
         <div class="ticket-details">
+          <button class="close-ticket-btn" @click="selectedTicket = null">✕</button>
+
           <h3>Chi tiết vé</h3>
           <ul>
             <li><b>Sự kiện:</b> {{ selectedTicket.title }}</li>
@@ -41,24 +46,21 @@
           </ul>
 
           <div class="ticket-buttons">
-            <button>Tải vé</button>
-            <button>Thêm vào lịch</button>
-            <button @click="$router.push('/support')">Liên hệ hỗ trợ</button>
+            <button @click="downloadTicketPDF">Tải vé</button>
+            <button @click="addToGoogleCalendar">Thêm vào lịch</button>
+            <button @click="goSupport">Liên hệ hỗ trợ</button>
+            <button class="btn-close-ticket" @click="selectedTicket = null">Đóng</button>
           </div>
         </div>
 
-        <!-- ✅ Cột phải: Mã QR -->
+        <!-- RIGHT: QR -->
         <div class="ticket-qr-box">
-          <img
-            :src="`https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=TICKET-${selectedTicket.ticket_id}`"
-            alt="QR Code"
-            class="qr-image"
-          />
+          <img :src="qrUrl(selectedTicket)" class="qr-image" />
           <p class="qr-label">Quét mã QR khi vào cổng</p>
         </div>
-
       </div>
 
+      <div v-else class="no-ticket-selected">Chọn 1 vé để xem chi tiết và tải vé / thêm lịch</div>
 
     </main>
   </div>
@@ -67,6 +69,8 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import TicketCard from "../components/TicketCard.vue";
 import "../assets/css/tickets.css";
 
@@ -75,92 +79,110 @@ const searchQuery = ref("");
 const selectedTicket = ref(null);
 const tickets = ref([]);
 
+const ticketWrapper = ref(null);
+
 const user = JSON.parse(localStorage.getItem("user") || "{}");
 const userId = user?.id;
 
-// Fetch Tickets
 onMounted(async () => {
   try {
     const res = await axios.get("http://localhost:3000/user-tickets", {
       params: { user_id: userId }
     });
     tickets.value = res.data;
-  } catch (error) {
-    console.error("Lỗi lấy vé:", error);
-  }
+  } catch (e) { console.error(e); }
 });
 
-// Switch Tab
-const changeTab = (tab) => {
-  activeTab.value = tab;
-  selectedTicket.value = null;
-};
+const changeTab = (tab) => { activeTab.value = tab; selectedTicket.value = null; };
 
-// Format
 const formatPrice = (p) => p?.toLocaleString("vi-VN") + " VND";
 const formatDate = (d) => new Date(d).toLocaleString("vi-VN");
 const formattedLocation = (t) =>
   `${t.venue_name}${t.venue_address ? ", " + t.venue_address : ""}`;
 
-// Filter Tickets
 const filteredTickets = computed(() => {
   const now = new Date();
   return tickets.value.filter((t) => {
+    if (!t) return false;
     const start = new Date(t.start_time);
-    const end = new Date(t.end_time);
-
+    const end = new Date(t.end_time || t.start_time);
     const matchSearch =
-      t.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      (t.title || "").toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       formatDate(t.start_time).includes(searchQuery.value);
 
     if (!matchSearch) return false;
-
     if (activeTab.value === "upcoming") return start > now && t.status !== "canceled";
     if (activeTab.value === "past") return end < now && t.status !== "canceled";
     if (activeTab.value === "canceled") return t.status === "canceled";
-
     return true;
   });
 });
 
-// Select Ticket
-const selectTicket = (ticket) => {
-  selectedTicket.value = ticket;
+const selectTicket = (ticket) => { selectedTicket.value = ticket; };
+
+const qrUrl = (t) => `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=TICKET-${t.ticket_id}`;
+
+const downloadTicketPDF = async () => {
+  if (!ticketWrapper.value) return;
+
+  // Clone node để xuất PDF, không ảnh hưởng UI
+  const clone = ticketWrapper.value.cloneNode(true);
+
+  // Xóa các nút không muốn in
+  clone.querySelectorAll(".ticket-buttons, .close-ticket-btn").forEach(el => el.remove());
+
+  // Tạo vùng render ẩn
+  const container = document.createElement("div");
+  container.style.position = "fixed";
+  container.style.left = "-9999px";
+  container.appendChild(clone);
+  document.body.appendChild(container);
+
+  // Chụp với độ nét cao
+  const canvas = await html2canvas(clone, { scale: 3, useCORS: true });
+  const img = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+  const width = pdf.internal.pageSize.getWidth();
+  const height = (canvas.height * width) / canvas.width;
+
+  pdf.addImage(img, "PNG", 0, 0, width, height);
+  pdf.save(`Ve_${selectedTicket.value.ticket_id}.pdf`);
+
+  container.remove();
+};
+
+
+const goSupport = () => {
+  window.location.href = `/support?event_id=${selectedTicket.value.event_id}`;
+};
+
+const toGoogleDateTimeISO = (dt) =>
+  new Date(dt).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+const addToGoogleCalendar = () => {
+  const t = selectedTicket.value;
+  const start = toGoogleDateTimeISO(t.start_time);
+  const end = t.end_time ? toGoogleDateTimeISO(t.end_time)
+    : toGoogleDateTimeISO(new Date(new Date(t.start_time).getTime() + 2 * 3600 * 1000));
+
+  const url =
+    `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(t.title)}&dates=${start}%2F${end}&location=${encodeURIComponent(formattedLocation(t))}`;
+  window.open(url, "_blank");
 };
 </script>
 
 <style scoped>
-.ticket-list {
-  max-height: 400px;
-  overflow-y: auto;
-  margin-top: 12px;
-  padding-right: 6px;
-}
-.ticket-list::-webkit-scrollbar {
-  width: 6px;
-}
-.ticket-list::-webkit-scrollbar-thumb {
-  background: #c9c8ff;
-  border-radius: 6px;
-}
 .ticket-details-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-top: 18px;
   gap: 18px;
-}
-
-.ticket-details {
-  flex: 1;
-  background: white;
-  padding: 18px;
-  border-radius: 12px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.08);
+  flex-wrap: nowrap;
 }
 
 .ticket-qr-box {
-  width: 200px;
+  flex: 0 0 210px;
   background: white;
   border-radius: 12px;
   padding: 16px;
@@ -171,13 +193,28 @@ const selectTicket = (ticket) => {
 .qr-image {
   width: 170px;
   height: 170px;
-  border-radius: 8px;
+  object-fit: contain;
 }
 
-.qr-label {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #444;
+.close-ticket-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #eee;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+.btn-close-ticket {
+  background: #f3f3f3 !important;
+  color: #222;
+  border: 1px solid #ccc;
+}
+
+.btn-close-ticket:hover {
+  background: #e6e6e6;
 }
 
 </style>
