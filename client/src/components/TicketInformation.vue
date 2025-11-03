@@ -36,8 +36,9 @@
       <div class="cards">
         <div class="card">
           <h3>Mã QR</h3>
-          <div class="qr-box">
-            <canvas ref="qrContainer"></canvas>
+          <div class="qr-box" style="display: flex; justify-content: center;">
+            <img v-if="ticket && ticket.qr_code && ticket.qr_code.startsWith('data:image')" :src="ticket.qr_code" alt="QR code" style="width:150px;"/>
+            <canvas v-else ref="qrContainer"></canvas>
           </div>
         </div>
 
@@ -162,7 +163,7 @@ onMounted(async () => {
 });
 
 watch(ticket, async (val) => {
-  if (val && qrContainer.value) {
+  if (val && qrContainer.value && (!val.qr_code || !val.qr_code.startsWith('data:image'))) {
     qrContainer.value.innerHTML = "";
     await QRCode.toCanvas(qrContainer.value, val.qr_code || val.ticket_id, { width: 120 });
   }

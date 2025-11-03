@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
+const QRCode = require('qrcode');
 
 const app = express();
 app.use(cors());
@@ -496,14 +497,17 @@ app.post('/purchase-ticket', async (req, res) => {
     const now = new Date();
     const qrBase = `QR${Date.now()}`;
 
+    // Lấy tên sự kiện 1 lần (dùng cho tất cả vé)
+    const [eventInfoRows] = await pool.query('SELECT title FROM events WHERE id = ?', [event_id]);
+    const eventTitle = eventInfoRows?.[0]?.title || '';
+
     if (!isCartMode) {
       // Payload cũ - giữ nguyên hành vi
       const unitPrice = Number(total_amount) / Number(quantity);
       const ticketValues = [];
       for (let i = 0; i < Number(quantity); i++) {
         const seatNumber = soldCount + i + 1;
-        const qrCode = `${qrBase}${i}`;
-        ticketValues.push([event_id, user_id, seatNumber, ticket_type, unitPrice, 'sold', qrCode, now]);
+        ticketValues.push([event_id, user_id, seatNumber, ticket_type, unitPrice, 'sold', null, now]);
       }
       const placeholders = ticketValues.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
       const [insertTickets] = await pool.query(
@@ -512,6 +516,14 @@ app.post('/purchase-ticket', async (req, res) => {
       );
       const firstTicketId = insertTickets.insertId;
       const insertedCount = insertTickets.affectedRows || Number(quantity);
+      // Update QR cho từng vé
+      for (let i = 0; i < insertedCount; i++) {
+        const ticketId = firstTicketId + i;
+        const seatNumber = soldCount + i + 1;
+        const qrPayload = JSON.stringify({ ticket_id: ticketId, event_title: eventTitle, seat_number: seatNumber });
+        const qrImage = await QRCode.toDataURL(qrPayload);
+        await pool.query('UPDATE tickets SET qr_code = ? WHERE id = ?', [qrImage, ticketId]);
+      }
       const payMethod = payment_method || 'credit_card';
       const payments = [];
       for (let i = 0; i < insertedCount; i++) {
@@ -526,7 +538,7 @@ app.post('/purchase-ticket', async (req, res) => {
       return res.json({ message: 'Mua vé và ghi nhận thanh toán thành công!', tickets_created: insertedCount, remaining_after: remaining - insertedCount });
     }
 
-    // Payload mới - nhiều loại vé một lần
+    // Payload mới - nhiều loại vé một lần (cart)
     let nextSeat = soldCount + 1;
     const values = [];
     const placeholders = [];
@@ -536,8 +548,7 @@ app.post('/purchase-ticket', async (req, res) => {
       const price = Number(item.price) || 0;
       for (let i = 0; i < qty; i++) {
         const seatNumber = nextSeat++;
-        const qrCode = `${qrBase}-${type}-${i}`;
-        values.push(event_id, user_id, seatNumber, type, price, 'sold', qrCode, now);
+        values.push(event_id, user_id, seatNumber, type, price, 'sold', null, now);
         placeholders.push('(?, ?, ?, ?, ?, ?, ?, ?)');
       }
     }
@@ -547,10 +558,16 @@ app.post('/purchase-ticket', async (req, res) => {
     );
     const firstTicketId = insertTickets.insertId;
     const insertedCount = insertTickets.affectedRows || totalQty;
+    // Update QR cho từng vé
+    for (let i = 0; i < insertedCount; i++) {
+      const ticketId = firstTicketId + i;
+      const seatNumber = soldCount + i + 1;
+      const qrPayload = JSON.stringify({ ticket_id: ticketId, event_title: eventTitle, seat_number: seatNumber });
+      const qrImage = await QRCode.toDataURL(qrPayload);
+      await pool.query('UPDATE tickets SET qr_code = ? WHERE id = ?', [qrImage, ticketId]);
+    }
     const payMethod = payment_method || 'credit_card';
     const payments = [];
-    // Lặp lại theo số lượng vé đã chèn, payment amount nên theo từng vé (price tương ứng)
-    // Do ở trên không giữ riêng từng price theo id, ta tính lại từ tickets theo cùng thứ tự
     const perTicketAmounts = [];
     for (const item of tickets) {
       const qty = Number(item.quantity) || 0;
