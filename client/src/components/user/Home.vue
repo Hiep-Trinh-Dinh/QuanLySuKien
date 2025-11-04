@@ -30,7 +30,7 @@
         :key="event.id"
         class="col-12 col-md-4"
       >
-        <EventCard :event="event" />
+        <EventCard :event="event" @detail="handleDetailClick" />
       </div>
     </div>
 
@@ -44,9 +44,20 @@
       >
         <div>
           <strong>{{ event.title }}</strong>
-          <div class="small text-muted">{{ event.date }} - {{ event.location }}</div>
+          <div class="small text-muted">
+            {{ event.date }} - {{ event.location }}
+          </div>
         </div>
+<<<<<<< Updated upstream
         <button class="btn btn-outline-primary btn-sm" @click="router.push(`/event-detail/${event.id}`)">Chi tiết</button>
+=======
+        <button
+          class="btn btn-outline-primary btn-sm"
+          @click="handleDetailClick(event.id)"
+        >
+          Chi tiết
+        </button>
+>>>>>>> Stashed changes
       </li>
     </ul>
   </div>
@@ -58,19 +69,39 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import EventCard from "../card/EventCard.vue";
 import CategoryCard from "../card/CategoryCard.vue";
+<<<<<<< Updated upstream
 import { fetchEvents } from "../../scripts/ExploreEvents.js";
 
 
 const router = useRouter()
+=======
+import { useRouter } from "vue-router";
+const router = useRouter();
+>>>>>>> Stashed changes
 
 const search = ref("");
 
 // Thể loại
 const categories = ref([
-  { id: 1, name: "Âm nhạc", desc: "Biểu diễn, hòa nhạc...", icon: "bi-music-note-beamed" },
-  { id: 2, name: "Hội nghị", desc: "Hội thảo, kinh doanh", icon: "bi-bar-chart-line-fill" },
+  {
+    id: 1,
+    name: "Âm nhạc",
+    desc: "Biểu diễn, hòa nhạc...",
+    icon: "bi-music-note-beamed",
+  },
+  {
+    id: 2,
+    name: "Hội nghị",
+    desc: "Hội thảo, kinh doanh",
+    icon: "bi-bar-chart-line-fill",
+  },
   { id: 3, name: "Thể thao", desc: "Bóng đá, thể dục", icon: "bi-trophy-fill" },
-  { id: 4, name: "Nghệ thuật", desc: "Triển lãm, biểu diễn", icon: "bi-palette-fill" },
+  {
+    id: 4,
+    name: "Nghệ thuật",
+    desc: "Triển lãm, biểu diễn",
+    icon: "bi-palette-fill",
+  },
 ]);
 
 // All events fetched from backend
@@ -80,6 +111,7 @@ const events = ref([]);
 const featuredEvents = ref([]);
 
 // Sự kiện sắp diễn ra
+<<<<<<< Updated upstream
 const upcomingEvents = ref([]);
 
 // Helper: transform backend event into a small view model
@@ -119,6 +151,32 @@ async function loadEvents() {
 onMounted(() => {
   loadEvents();
 });
+=======
+const upcomingEvents = ref([
+  {
+    id: 1,
+    title: "Khai mạc triển lãm nghệ thuật",
+    date: "Dec 10, 2025",
+    location: "Bảo tàng Mỹ thuật",
+  },
+  {
+    id: 2,
+    title: "Sự kiện kết nối kinh doanh",
+    date: "Dec 12, 2025",
+    location: "Khách sạn Melia",
+  },
+  {
+    id: 3,
+    title: "Đêm nhạc Jazz",
+    date: "Dec 15, 2025",
+    location: "CLB Âm nhạc Hà Nội",
+  },
+]);
+
+const handleDetailClick = (id) => {
+  router.push({ name: "EventDetail", params: { id } });
+};
+>>>>>>> Stashed changes
 </script>
 
 <style>
@@ -127,14 +185,14 @@ body {
 }
 
 .shadow-primary {
-  box-shadow: 0 .5rem 1rem rgba(13, 110, 253, 0.3) !important; /* xanh dương */
+  box-shadow: 0 0.5rem 1rem rgba(13, 110, 253, 0.3) !important; /* xanh dương */
 }
 
 .shadow-success {
-  box-shadow: 0 .5rem 1rem rgba(25, 135, 84, 0.3) !important; /* xanh lá */
+  box-shadow: 0 0.5rem 1rem rgba(25, 135, 84, 0.3) !important; /* xanh lá */
 }
 
 .shadow-danger {
-  box-shadow: 0 .5rem 1rem rgba(220, 53, 69, 0.3) !important; /* đỏ */
+  box-shadow: 0 0.5rem 1rem rgba(220, 53, 69, 0.3) !important; /* đỏ */
 }
 </style>
