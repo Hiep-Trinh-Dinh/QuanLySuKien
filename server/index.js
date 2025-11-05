@@ -8,7 +8,9 @@ const QRCode = require('qrcode');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+// increase body size limit to allow base64 image uploads (data URLs)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
@@ -824,7 +826,7 @@ app.get('/user-profile', async (req, res) => {
 // PUT /update-profile - Cập nhật thông tin user
 app.put('/update-profile', async (req, res) => {
   try {
-    const { user_id, username, full_name, phone, avatar_data } = req.body;
+    const { user_id, username, full_name, phone, avatar_data, password } = req.body;
     if (!user_id) return res.status(400).json({ message: 'Thiếu user_id!' });
 
     const [users] = await pool.query('SELECT avatar_url FROM users WHERE id = ?', [user_id]);
@@ -861,6 +863,16 @@ app.put('/update-profile', async (req, res) => {
 
     let query = 'UPDATE users SET username = ?, full_name = ?, phone = ?';
     const params = [username, full_name, phone];
+
+    // If client requests a password change, validate & hash it then include in update
+    if (password !== undefined && password !== null && password !== '') {
+      if (typeof password !== 'string' || password.length < 6) {
+        return res.status(400).json({ message: 'Mật khẩu mới phải có ít nhất 6 ký tự.' });
+      }
+      const hashed = await bcrypt.hash(password, 10);
+      query += ', password = ?';
+      params.push(hashed);
+    }
 
     if (newAvatarUrl) {
       query += ', avatar_url = ?';
