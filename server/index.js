@@ -1615,6 +1615,39 @@ app.post("/admin/venues", async (req, res) => {
   }
 });
 
+//thong ke
+app.get("/revenue-by-month", async (req, res) => {
+  try {
+    const { month } = req.query; // month = "YYYY-MM"
+    if (!month) return res.status(400).json({ error: "month query required" });
+
+    const [year, mon] = month.split("-").map(Number);
+    if (!year || !mon)
+      return res.status(400).json({ error: "Invalid month format" });
+
+    const startDate = `${year}-${String(mon).padStart(2, "0")}-01`;
+    const lastDay = new Date(year, mon, 0).getDate();
+    const endDate = `${year}-${String(mon).padStart(2, "0")}-${lastDay}`;
+
+    const [payments] = await pool.query(
+      "SELECT amount, paid_at FROM payments WHERE paid_at BETWEEN ? AND ? ORDER BY paid_at ASC",
+      [startDate, endDate]
+    );
+
+    const revenueByDay = {};
+    payments.forEach((p) => {
+      const day = new Date(p.paid_at).toLocaleDateString("vi-VN");
+      revenueByDay[day] = Number(revenueByDay[day] || 0) + Number(p.amount);
+    });
+
+    console.log("Payments:", revenueByDay); // check dữ liệu
+    res.json(revenueByDay);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () =>
   console.log(`Server running on http://localhost:${PORT}`)
