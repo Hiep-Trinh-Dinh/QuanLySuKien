@@ -253,7 +253,7 @@ CREATE TABLE `tickets` (
   `event_id` int NOT NULL,
   `user_id` int DEFAULT NULL,
   `seat_number` int DEFAULT NULL,
-  `Type` enum('A','B','C') DEFAULT 'A',
+  `Type` enum('student','standard','vip') DEFAULT 'standard',
   `price` decimal(10,2) NOT NULL,
   `status` enum('available','reserved','sold') DEFAULT 'available',
   `qr_code` varchar(255) DEFAULT NULL,

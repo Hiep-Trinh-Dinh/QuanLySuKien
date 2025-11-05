@@ -139,6 +139,21 @@
   background: #70bce2;
 }
 
+.dashboard-btn {
+  margin-top: 5px;
+  width: 100%;
+  background: #fff;
+  color: #2dc588;
+  border: 2px solid #2dc588;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.dashboard-btn:hover {
+  background: #e0f2f1;
+}
+
 
 .create-event-btn{
   background: #6c63ff;

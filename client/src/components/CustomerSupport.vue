@@ -152,8 +152,29 @@ const submitTicket = async () => {
 };
 
 const goBack = () => router.push("/tickets");
-const chatSupport = () => window.open("https://m.me/support-center", "_blank");
-const callSupport = () => window.location.href = "tel:19006333";
+const chatSupport = () => {
+  const webLink = "https://www.messenger.com/t/huynh.vi.673627"; // Ưu tiên Web
+  const appLink = "https://m.me/huynh.vi.673627"; // fallback App Messenger
+
+  const win = window.open(webLink, "_blank");
+  if (!win || win.closed || typeof win.closed === "undefined") {
+    window.location.href = appLink;
+  }
+};
+
+const callSupport = () => {
+  const phone = "0365876243";
+
+  // Ưu tiên mở Zalo (tốt trên cả PC & Mobile)
+  const zaloLink = `https://zalo.me/${phone}`;
+  const win = window.open(zaloLink, "_blank");
+
+  // Nếu trình duyệt chặn popup hoặc không mở được → fallback sang gọi
+  if (!win || win.closed || typeof win.closed === "undefined") {
+    window.location.href = `tel:${phone}`;
+  }
+};
+
 </script>
 
 

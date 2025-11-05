@@ -4,8 +4,7 @@
       <img :src="user.avatar" class="rounded-circle me-4" alt="avatar" width="120" height="120" />
       <div class="flex-fill">
         <h4>Chào mừng quay trở lại, {{ user.username }}!</h4>
-        <p class="mb-1"><strong>{{ user.displayName }}</strong> ({{ user.rank }})</p>
-        <small class="text-muted">{{ user.points }} Điểm Danh Dự</small>
+        <p class="mb-1"><strong>{{ user.displayName }}</strong> ({{ user.role }})</p>
       </div>
       <div class="d-flex gap-2 mt-3 mt-md-0">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal" @click="openEditModal">
@@ -15,7 +14,7 @@
     </div>
 
     <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileLabel" aria-hidden="true">
-      <div class="modal-dialog modal-md modal-dialog-centered">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content shadow-lg border-0 rounded-4">
           <div class="modal-header bg-primary text-white rounded-top-4">
             <h5 class="modal-title fw-semibold" id="editProfileLabel">Thay đổi Hồ sơ của bạn</h5>
@@ -24,29 +23,44 @@
 
           <div class="modal-body p-4">
             <form class="row g-3" @submit.prevent="saveProfile">
-              <div class="col-12 d-flex align-items-center gap-3">
-                <img :src="user.avatar" alt="preview" class="rounded-circle" width="72" height="72" />
-                <div>
-                  <label class="form-label mb-1">Ảnh đại diện</label>
-                  <div>
-                    <input type="file" accept="image/*" @change="onAvatarFileChange" />
-                    <small class="text-muted d-block">Chọn ảnh để thay thế ảnh mặc định.</small>
-                    <div v-if="isUploading" class="mt-2"><small class="text-primary">Đang tải ảnh lên...</small></div>
+              <div class="col-12 row gx-4">
+                <div class="col-md-4 d-flex flex-column align-items-center">
+                  <img :src="user.avatar" alt="preview" class="rounded-circle mb-3" style="width:110px;height:110px;object-fit:cover" />
+                  <label class="form-label">Ảnh đại diện</label>
+                  <input type="file" accept="image/*" @change="onAvatarFileChange" class="form-control form-control-sm" />
+                  <small class="text-muted mt-2">Chọn ảnh để thay thế ảnh mặc định.</small>
+                  <div v-if="isUploading" class="mt-2"><small class="text-primary">Đang tải ảnh lên...</small></div>
+                </div>
+
+                <div class="col-md-8">
+                  <div class="row g-2">
+                    <div class="col-12">
+                      <label class="form-label">Tên đầy đủ</label>
+                      <input type="text" class="form-control rounded-3" v-model="editFullName" />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Email</label>
+                      <input type="email" class="form-control rounded-3" v-model="editEmail" disabled />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Số điện thoại</label>
+                      <input type="tel" class="form-control rounded-3" v-model="editPhone" />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Mật khẩu mới</label>
+                      <input type="password" class="form-control rounded-3" v-model="newPassword" placeholder="Để trống nếu không đổi" />
+                      <div class="form-text">Để trống nếu không muốn thay đổi mật khẩu. Tối thiểu 6 ký tự.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Nhập lại mật khẩu mới</label>
+                      <input type="password" class="form-control rounded-3" v-model="confirmPassword" placeholder="Xác nhận mật khẩu" />
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div class="col-12">
-                <label class="form-label">Tên đầy đủ</label>
-                <input type="text" class="form-control rounded-3" v-model="editFullName" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control rounded-3" v-model="editEmail" disabled />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Số điện thoại</label>
-                <input type="tel" class="form-control rounded-3" v-model="editPhone" />
               </div>
             </form>
           </div>
@@ -65,7 +79,6 @@
         <ul class="list-unstyled">
           <li class="mb-2"><i class="bi bi-envelope me-2"></i>{{ user.email }}</li>
           <li class="mb-2"><i class="bi bi-telephone me-2"></i>{{ user.phone }}</li>
-          <li><i class="bi bi-geo-alt me-2"></i>{{ user.address || "Chưa cập nhật địa chỉ" }}</li>
         </ul>
       </div>
     </div>
@@ -126,13 +139,15 @@ const toast = useToast();
 
 const user = ref({
   id: null, username: "", displayName: "", avatar: "", email: "", phone: "", address: "",
-  rank: "", points: 0, notifications: true, interests: "Âm nhạc"
+  role: "", notifications: true, interests: "Âm nhạc"
 });
 
 const events = ref([]);
 const editFullName = ref("");
 const editEmail = ref("");
 const editPhone = ref("");
+const newPassword = ref("");
+const confirmPassword = ref("");
 const avatarFile = ref(null);
 const isUploading = ref(false);
 const avatarPreviewUrl = ref(null);
@@ -160,9 +175,7 @@ async function loadUserAndEvents() {
     user.value.avatar = data.avatar_url ?? data.avatar ?? user.value.avatar;
     user.value.email = data.email ?? user.value.email;
     user.value.phone = data.phone ?? user.value.phone;
-    user.value.address = data.address ?? user.value.address;
-    user.value.rank = data.role ?? user.value.rank;
-    user.value.points = data.points ?? user.value.points;
+    user.value.role = data.role ?? user.value.role;
     editFullName.value = user.value.displayName;
     editEmail.value = user.value.email;
     editPhone.value = user.value.phone;
@@ -237,6 +250,19 @@ async function saveProfile() {
       payload.avatar_data = await fileToDataUrl(avatarFile.value);
     }
 
+    // handle password change: include password only if user provided and validated
+    if (newPassword.value) {
+      if (newPassword.value.length < 6) {
+        toast.error('Mật khẩu mới phải có ít nhất 6 ký tự');
+        return;
+      }
+      if (newPassword.value !== confirmPassword.value) {
+        toast.error('Mật khẩu xác nhận không khớp');
+        return;
+      }
+      payload.password = newPassword.value;
+    }
+
     console.log('Sending update-profile payload:', payload);
     const updated = await updateUser(user.value.id, payload);
     console.log('update-profile response:', updated);
@@ -261,7 +287,10 @@ async function saveProfile() {
       console.warn('updateLocalStorageWith failed:', lsErr);
     }
 
-    avatarFile.value = null;
+  avatarFile.value = null;
+  // clear password fields after successful update
+  newPassword.value = '';
+  confirmPassword.value = '';
     if (avatarPreviewUrl.value) {
       try { URL.revokeObjectURL(avatarPreviewUrl.value); } catch (e) {}
       avatarPreviewUrl.value = null;

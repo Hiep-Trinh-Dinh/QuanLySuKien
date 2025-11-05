@@ -2,7 +2,6 @@ import axios from "axios";
 
 const API_URL = "http://localhost:3000"; // phù hợp với server/index.js
 
-// Lấy thông tin người dùng (GET /user-profile?user_id=...)
 export async function getUser(userId) {
   try {
     const res = await axios.get(`${API_URL}/user-profile`, {
@@ -30,6 +29,14 @@ function buildUpdatePayload(userId, data = {}) {
     payload.avatar_data = data.avatarUrl;
   } else if (data.avatar_url !== undefined) {
     payload.avatar_data = data.avatar_url;
+  }
+
+  // include password if provided (client will only set this when user wants to change password)
+  if (data.password !== undefined && data.password !== null && data.password !== '') {
+    // server expects field named 'password' for updates
+    payload.password = data.password;
+  } else if (data.new_password !== undefined && data.new_password !== null && data.new_password !== '') {
+    payload.password = data.new_password;
   }
 
   return payload;
