@@ -18,6 +18,7 @@
             <div class="user-name">{{ user.username }}</div>
             <button class="logout-btn" @click.stop="logout">Đăng xuất</button>
             <button class="profile-btn" @click.stop="$router.push('/profile')">Trang cá nhân</button>
+            <button class="dashboard-btn" @click.stop="$router.push('/dashboard')">Trang quản trị</button>
           </div>
         </template>
         <template v-else>
