@@ -113,7 +113,7 @@ onMounted(() => {
     </template>
     <div v-else class="text-secondary">Sự kiện chưa có lịch biểu diễn.</div>
   </div>
-  <!-- <div class="mb-4">
+  <div class="mb-4">
     <h4>Ticket Options</h4>
     <div v-if="loadingTickets" class="text-secondary py-2">
       Đang tải danh sách vé...
@@ -139,10 +139,10 @@ onMounted(() => {
       </div>
     </template>
     <div v-else class="text-secondary">Hiện chưa có vé hoặc chưa cập nhật.</div>
-    <button class="btn btn-buy">Buy Tickets</button>
+    <!-- <button class="btn btn-buy">Buy Tickets</button>
 
-    <button class="btn btn-share">Share Event</button>
-  </div> -->
+    <button class="btn btn-share">Share Event</button> -->
+  </div>
   <router-link
     :to="{ name: 'TicketPayment', query: { event_id: event.id } }"
     class="btn btn-buy btn-custom"
