@@ -1,28 +1,31 @@
 <script lang="ts">
 import Map from "../Map.vue";
 import "../../assets/css/global.css";
+import { useRoute } from "vue-router";
 export default {
   name: "Venue",
   props: {
-    venue: { type: Object, required: false }
+    venue: { type: Object, required: false },
   },
   components: { Map },
+  data() {
+    const route = useRoute();
+    return {
+      eventId: route.params.id, // đưa vào data để template truy cập được
+    };
+  },
 };
 </script>
 <template>
   <h4>Venue Information</h4>
-  <span v-if="venue">
-    {{ venue.venue_name }} - {{ venue.venue_address }}
-  </span>
-  <span v-else>
-    Chưa có thông tin địa điểm cụ thể.
-  </span>
+  <span v-if="venue"> {{ venue.venue_name }} - {{ venue.venue_address }} </span>
+  <span v-else> Chưa có thông tin địa điểm cụ thể. </span>
 
   <h5 class="mt-3">Location & Directions</h5>
   <Map v-if="venue && venue.venue_address" :address="venue.venue_address" />
   <span v-else class="text-secondary">Đang tải địa chỉ sự kiện...</span>
   <span class="fw-bold">
-    Address: {{ venue?.venue_address || 'Chưa có địa chỉ sự kiện' }}
+    Address: {{ venue?.venue_address || "Chưa có địa chỉ sự kiện" }}
   </span>
   <div class="mt-3">
     <h5>Getting there</h5>
@@ -166,8 +169,12 @@ export default {
     </ul>
   </div>
   <div class="ms-3">
-    <button class="btn btn-buy">Buy Tickets</button>
-    <button class="btn btn-share">View Virtual Tour</button>
+    <router-link
+      :to="{ name: 'TicketPayment', query: { event_id: eventId } }"
+      class="btn btn-buy btn-custom"
+    >
+      Mua vé
+    </router-link>
   </div>
 </template>
 
