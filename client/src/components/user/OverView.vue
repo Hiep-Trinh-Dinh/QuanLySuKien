@@ -160,6 +160,7 @@ watch(
   align-items: center;
   height: 50px;
   width: 50px;
+  color: #634aff;
 }
 .btn-custom {
   background-color: #634aff;

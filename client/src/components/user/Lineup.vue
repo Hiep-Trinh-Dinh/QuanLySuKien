@@ -160,6 +160,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   line-height: 1;
+  color: #7c3aed;
 }
 .icon-square {
   border-radius: 10px;
