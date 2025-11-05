@@ -55,7 +55,7 @@
 
         <!-- RIGHT: QR -->
         <div class="ticket-qr-box">
-          <img :src="qrUrl(selectedTicket)" class="qr-image" />
+          <canvas ref="qrCanvas" class="qr-image" width="170" height="170"></canvas>
           <p class="qr-label">Quét mã QR khi vào cổng</p>
         </div>
       </div>
@@ -67,19 +67,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import QRCode from "qrcode";
 import TicketCard from "../components/TicketCard.vue";
 import "../assets/css/tickets.css";
+import { nextTick } from "vue";
 
 const activeTab = ref("upcoming");
 const searchQuery = ref("");
 const selectedTicket = ref(null);
 const tickets = ref([]);
-
 const ticketWrapper = ref(null);
+const qrCanvas = ref(null);
 
 const user = JSON.parse(localStorage.getItem("user") || "{}");
 const userId = user?.id;
@@ -92,6 +94,14 @@ onMounted(async () => {
     tickets.value = res.data;
   } catch (e) { console.error(e); }
 });
+
+const selectTicket = (ticket) => {
+  selectedTicket.value = ticket;
+
+  console.log(">>> SELECTED TICKET RAW:", JSON.parse(JSON.stringify(ticket)));
+};
+
+
 
 const changeTab = (tab) => { activeTab.value = tab; selectedTicket.value = null; };
 
@@ -118,27 +128,67 @@ const filteredTickets = computed(() => {
   });
 });
 
-const selectTicket = (ticket) => { selectedTicket.value = ticket; };
 
-const qrUrl = (t) => `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=TICKET-${t.ticket_id}`;
+watch(selectedTicket, async (t) => {
+  if (!t) return;
+
+  await nextTick(); // ⬅ đảm bảo canvas xuất hiện trên DOM rồi mới vẽ
+
+  const canvas = qrCanvas.value;
+  const ctx = canvas.getContext("2d");
+
+  // Đặt kích thước chính xác mỗi lần vẽ
+  canvas.width = 170;
+  canvas.height = 170;
+  ctx.clearRect(0, 0, 170, 170);
+
+  const qrValue =
+    t.qr_code && t.qr_code.startsWith("data:image")
+      ? t.qr_code
+      : `TICKET-${t.ticket_id}`;
+
+  // ✅ Nếu là base64 thì load ảnh rồi vẽ
+  if (qrValue.startsWith("data:image")) {
+    const img = new Image();
+    img.src = qrValue;
+    img.onload = () => ctx.drawImage(img, 0, 0, 170, 170);
+  } 
+  // ✅ Nếu chỉ là text → tạo QR bằng qrcode
+  else {
+    QRCode.toCanvas(canvas, qrValue, { width: 170 });
+  }
+});
+// PDF Export giữ nguyên
 
 const downloadTicketPDF = async () => {
   if (!ticketWrapper.value) return;
 
-  // Clone node để xuất PDF, không ảnh hưởng UI
+  // đảm bảo QR đã vẽ xong trước khi chụp
+  await nextTick();
+
+  // tạo bản sao nguyên ticket
   const clone = ticketWrapper.value.cloneNode(true);
 
-  // Xóa các nút không muốn in
+  // giữ lại canvas QR
+  const originalCanvas = qrCanvas.value;
+  const cloneCanvas = clone.querySelector("canvas");
+  if (originalCanvas && cloneCanvas) {
+    const ctx = cloneCanvas.getContext("2d");
+    cloneCanvas.width = originalCanvas.width;
+    cloneCanvas.height = originalCanvas.height;
+    ctx.drawImage(originalCanvas, 0, 0);
+  }
+
+  // xoá các nút
   clone.querySelectorAll(".ticket-buttons, .close-ticket-btn").forEach(el => el.remove());
 
-  // Tạo vùng render ẩn
+  // cho clone ra ngoài màn hình để chụp
   const container = document.createElement("div");
   container.style.position = "fixed";
   container.style.left = "-9999px";
   container.appendChild(clone);
   document.body.appendChild(container);
 
-  // Chụp với độ nét cao
   const canvas = await html2canvas(clone, { scale: 3, useCORS: true });
   const img = canvas.toDataURL("image/png");
 
@@ -147,7 +197,7 @@ const downloadTicketPDF = async () => {
   const height = (canvas.height * width) / canvas.width;
 
   pdf.addImage(img, "PNG", 0, 0, width, height);
-  pdf.save(`Ve_${selectedTicket.value.ticket_id}.pdf`);
+  pdf.save(`Ve_${selectedTicket.value.title}.pdf`);
 
   container.remove();
 };
@@ -157,8 +207,7 @@ const goSupport = () => {
   window.location.href = `/support?event_id=${selectedTicket.value.event_id}`;
 };
 
-const toGoogleDateTimeISO = (dt) =>
-  new Date(dt).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+const toGoogleDateTimeISO = (dt) => new Date(dt).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
 const addToGoogleCalendar = () => {
   const t = selectedTicket.value;
@@ -172,6 +221,8 @@ const addToGoogleCalendar = () => {
 };
 </script>
 
+
+
 <style scoped>
 .ticket-details-wrapper {
   display: flex;
@@ -180,6 +231,7 @@ const addToGoogleCalendar = () => {
   gap: 18px;
   flex-wrap: nowrap;
 }
+.qr-box canvas { margin-top: 6px; }
 
 .ticket-qr-box {
   flex: 0 0 210px;
@@ -191,9 +243,16 @@ const addToGoogleCalendar = () => {
 }
 
 .qr-image {
-  width: 170px;
-  height: 170px;
-  object-fit: contain;
+  width: 170px !important;
+  height: 170px !important;
+  display: block;
+  margin: auto;
+}
+
+.ticket-qr { 
+  margin-top: 16px; 
+  display: flex; 
+  justify-content: center;
 }
 
 .close-ticket-btn {
