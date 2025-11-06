@@ -277,5 +277,12 @@ const addToGoogleCalendar = () => {
 .btn-close-ticket:hover {
   background: #e6e6e6;
 }
+.ticket-list {
+  max-height: 300px;   /* chiều cao tối đa */
+  overflow-y: auto;    /* scroll khi vượt quá 500px */
+  /* display: flex; */
+  flex-direction: column;
+  gap: 12px;           /* khoảng cách giữa các vé */
+}
 
 </style>
