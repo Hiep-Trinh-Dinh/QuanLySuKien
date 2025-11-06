@@ -235,11 +235,13 @@ const addToGoogleCalendar = () => {
 
 .ticket-qr-box {
   flex: 0 0 210px;
-  background: white;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #bbb3f7 0%, #e1def4 50%, #e0affc 100%);
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(108, 99, 255, 0.08);  border-radius: 12px;  border-radius: 12px;
   padding: 16px;
   box-shadow: 0 0 8px rgba(0,0,0,0.08);
   text-align: center;
+  margin-top: 20px;
 }
 
 .qr-image {

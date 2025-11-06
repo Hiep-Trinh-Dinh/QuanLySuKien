@@ -317,10 +317,135 @@ onMounted(loadUserAndEvents);
 </script>
 
 <style scoped>
-  .container .form-label,
+  /* .container .form-label,
   .card .form-label {
     text-align: left;
     display: block;
-  }
+  } */
+  /* Màu nền tổng thể */
+.container {
+  background: #f8f7ff;
+}
+
+/* CARD CHUNG */
+.card {
+  background: #ffffff;
+  border: none;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 3px 14px rgba(108, 99, 255, 0.08);
+}
+
+/* CARD HEADER CHÍNH (avatar + chào mừng) */
+.card.mb-4.p-4 {
+  background: linear-gradient(135deg, #8d80ec, #b4a8ff, #f0d9ff);
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(108, 99, 255, 0.15);
+}
+
+/* Tiêu đề card */
+.card h6 {
+  font-weight: 600;
+  color: #6c63ff;
+}
+
+/* Nút chính */
+.btn-primary {
+  background: #6c63ff !important;
+  border-color: #6c63ff !important;
+  border-radius: 10px;
+  padding: 8px 18px;
+  transition: 0.2s;
+}
+.btn-primary:hover {
+  background: #5548c8 !important;
+}
+
+/* Nút viền */
+.btn-outline-primary {
+  color: #6c63ff;
+  border-color: #6c63ff;
+  border-radius: 10px;
+}
+.btn-outline-primary:hover {
+  background: #ebe8ff;
+}
+
+/* Modal Header */
+.modal-header.bg-primary {
+  background: #6c63ff !important;
+}
+
+/* Input trong form */
+.form-control,
+.form-select {
+  border-radius: 10px !important;
+  border-color: #d0cdfa;
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: #6c63ff;
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.25);
+}
+
+/* Tab trong phần hoạt động */
+.nav-tabs .nav-link {
+  border-radius: 8px;
+  margin-right: 6px;
+  color: #6c63ff;
+  border: 1px solid #d8d6fa;
+}
+.nav-tabs .nav-link.active {
+  background: #6c63ff;
+  color: #fff !important;
+  border-color: #6c63ff;
+}
+
+/* Table */
+.table thead th {
+  background: #f1efff;
+  color: #6c63ff;
+  border-bottom: none;
+}
+.table tbody tr:hover {
+  background: #f7f5ff;
+}
+
+/* Avatar trong card chính */
+.card img.rounded-circle {
+  border: 3px solid #6c63ff;
+}
+.nav-item {
+  list-style: none;
+}
+
+.nav-link {
+  background: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.25s;
+  color: #5a4ae3; /* tím nhẹ */
+}
+
+/* Hover */
+.nav-link:hover {
+  background: #edeaff;
+}
+
+/* Active (đang được chọn) */
+.nav-link.active {
+  background: linear-gradient(135deg, #a79df1, #d9d3ff);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.18);
+}
+
+/* Hover khi đang active (mềm nhẹ, không quá sáng) */
+.nav-link.active:hover {
+  background: linear-gradient(135deg, #9f95f0, #d2ccff);
+}
+
 </style>
 
