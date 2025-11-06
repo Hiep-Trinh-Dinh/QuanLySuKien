@@ -43,7 +43,9 @@
 
       <ReviewsPanel v-if="selected === 'reviews'" />
 
-      <StatisticalPanel v-if="selected === 'statistical'" />
+  <SupportPanel v-if="selected === 'support'" />
+
+  <StatisticalPanel v-if="selected === 'statistical'" />
     </main>
   </div>
 </template>
@@ -60,6 +62,7 @@ import TicketsPanel from "./panels/TicketsPanel.vue";
 import CategoriesPanel from "./panels/CategoriesPanel.vue";
 import VenuesPanel from "./panels/VenuesPanel.vue";
 import ReviewsPanel from "./panels/ReviewsPanel.vue";
+import SupportPanel from "./panels/SupportPanel.vue";
 import StatisticalPanel from "./panels/StatisticalPanel.vue";
 
 const menu = [
@@ -71,6 +74,7 @@ const menu = [
   { key: "categories", label: "Categories" },
   { key: "venues", label: "Venues" },
   { key: "reviews", label: "Reviews" },
+  { key: "support", label: "Support" },
   { key: "statistical", label: "Statistical" },
 ];
 

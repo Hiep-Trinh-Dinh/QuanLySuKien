@@ -1054,7 +1054,7 @@ app.get("/user-profile", async (req, res) => {
 // PUT /update-profile - Cập nhật thông tin user
 app.put("/update-profile", async (req, res) => {
   try {
-    const { user_id, username, full_name, phone, avatar_data } = req.body;
+    const { user_id, username, full_name, phone, avatar_data, password } = req.body;
     if (!user_id) return res.status(400).json({ message: "Thiếu user_id!" });
 
     const [users] = await pool.query(

@@ -315,3 +315,12 @@ async function saveProfile() {
 
 onMounted(loadUserAndEvents);
 </script>
+
+<style scoped>
+  .container .form-label,
+  .card .form-label {
+    text-align: left;
+    display: block;
+  }
+</style>
+

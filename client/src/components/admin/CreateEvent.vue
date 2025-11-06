@@ -391,4 +391,11 @@ img { display:block; max-height:140px; object-fit:cover; }
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
+/* Fix label alignment when global styles set text-align:center */
+.container .form-label,
+.card .form-label {
+  text-align: left;
+  display: block;
+}
+
 </style>

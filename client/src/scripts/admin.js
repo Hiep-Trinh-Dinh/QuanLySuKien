@@ -349,3 +349,26 @@ export async function deleteLineup(id) {
     throw error;
   }
 }
+
+// ------------------------
+// Support (admin)
+// ------------------------
+export async function getSupportTickets(params = {}) {
+  try {
+    const res = await axios.get(`${API_URL}/admin/support-tickets`, { params });
+    return res.data;
+  } catch (error) {
+    console.error('Lỗi khi lấy support tickets:', error);
+    throw error;
+  }
+}
+
+export async function updateSupportTicket(id, data) {
+  try {
+    const res = await axios.put(`${API_URL}/admin/support-tickets/${id}`, data);
+    return res.data;
+  } catch (error) {
+    console.error(`Lỗi khi cập nhật support ticket ${id}:`, error);
+    throw error;
+  }
+}
