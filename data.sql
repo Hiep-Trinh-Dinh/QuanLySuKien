@@ -186,7 +186,7 @@ CREATE TABLE `reviews` (
   `content` text,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `unique_event_user` (`event_id`, `user_id`), -- Mỗi user chỉ đánh giá mỗi event một lần
   KEY `event_id` (`event_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`),

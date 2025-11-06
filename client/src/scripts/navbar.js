@@ -16,8 +16,9 @@ export default {
   },
   computed: {
     userAvatar(){
-      const VUE_DEFAULT_IMG = 'https://res.cloudinary.com/dkdba4w94/image/upload/v1761639330/new-official-one-piece-art-to-celebrate-the-28th-anniversary-v0-r6mzac5bs8ef1_ufmaao.jpg';
-      // return this.user?.avatar || 'https://i.pravatar.cc/100?img=12' // this.env.VUE_DEFAULT_IMG
+      const VUE_DEFAULT_IMG = 
+      'https://res.cloudinary.com/dkdba4w94/image/upload/v1761639330/new-official-one-piece-art-to-celebrate-the-28th-anniversary-v0-r6mzac5bs8ef1_ufmaao.jpg'
+      ;
       console.log('User avatar:', this.user?.avatar);
       return this.user?.avatar || VUE_DEFAULT_IMG;
     }
@@ -43,7 +44,7 @@ export default {
       this.admin = this.user && this.user.role === 'admin';
     },
     onAuthLogin(e){
-      this.readUser(); // Đọc lại user mới nhất từ localStorage mỗi lần nhận sự kiện đăng nhậ
+      this.readUser();
     },
     onAuthLogout(){
       this.user = null

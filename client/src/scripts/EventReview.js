@@ -8,7 +8,10 @@ export async function eventReview(event_id, user_id, rating, name, email, phone,
     const res = await axios.post('http://localhost:3000/event-review', requestData);
     return res.data;
   } catch (err) {
-    if (err?.response?.data?.message && err.response.data.message.includes('Duplicate entry')) {
+    // Kiểm tra duplicate review (user đã đánh giá event này rồi)
+    if (err?.response?.data?.code === 'DUPLICATE_REVIEW' || 
+        err?.response?.data?.message?.includes('đã đánh giá') ||
+        err?.response?.data?.message?.includes('Duplicate entry')) {
       throw new Error('duplicate');
     }
     return null;
@@ -89,14 +92,14 @@ export function useEventReview() {
         // điều hướng sau một chút để user đóng dialog
         setTimeout(() => {
           closeDialog();
-          router.push(`/event-detail/${eventId.value}`);
-        }, 600);
+          router.push(`/event-detail/2`);
+        }, 1000);
       } else {
         openDialog('Đánh giá', 'Có lỗi xảy ra khi gửi đánh giá!');
       }
     } catch (err) {
       if (err.message === 'duplicate') {
-        openDialog('Đánh giá', 'Bạn đã đánh giá sự kiện này.');
+        openDialog('Đánh giá', 'Bạn đã đánh giá sự kiện này rồi!');
       } else {
         openDialog('Đánh giá', 'Có lỗi xảy ra khi gửi đánh giá!');
       }

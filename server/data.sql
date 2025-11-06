@@ -146,14 +146,14 @@ CREATE TABLE `reviews` (
   `id` int NOT NULL AUTO_INCREMENT,              -- Mã review (PK)
   `event_id` int NOT NULL,                       -- Sự kiện đánh giá (FK)
   `user_id` int DEFAULT NULL,                    -- (nullable) Người đánh giá (FK)
-  `email` varchar(100) NOT NULL,                 -- Email người đánh giá (unique)
+  `email` varchar(100) NOT NULL,                 -- Email người đánh giá
   `phone` varchar(20) DEFAULT NULL,              -- SĐT người đánh giá
   `name` varchar(100) DEFAULT NULL,              -- Tên người đánh giá
   `rating` int NOT NULL CHECK (rating >= 1 AND rating <= 5), -- Số sao
   `content` text,                                -- Nội dung nhận xét
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP, -- Ngày giờ tạo
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `unique_event_user` (`event_id`, `user_id`), -- Mỗi user chỉ đánh giá mỗi event một lần
   KEY `event_id` (`event_id`),
   KEY `user_id` (`user_id`),
   FOREIGN KEY (`event_id`) REFERENCES `events` (`id`),

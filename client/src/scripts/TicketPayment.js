@@ -160,9 +160,25 @@ export function useTicketPayment() {
   async function handlePayment() {
     if(isPaying.value) return;
     paymentMsg.value = "";
-    if(!userId) { paymentMsg.value = "Vui lòng đăng nhập trước khi thanh toán!"; dialogTitle.value='Thông báo'; dialogMessage.value = paymentMsg.value; showDialog.value = true; return; }
-    if(!name.value || !email.value || !phone.value) { paymentMsg.value = "Vui lòng nhập đầy đủ thông tin liên lạc!"; dialogTitle.value='Thông báo'; dialogMessage.value = paymentMsg.value; showDialog.value = true; return; }
-    if(cartEmpty.value) { paymentMsg.value = "Bạn chưa chọn vé nào."; dialogTitle.value='Thông báo'; dialogMessage.value = paymentMsg.value; showDialog.value = true; return; }
+    if(!userId) { paymentMsg.value = "Vui lòng đăng nhập trước khi thanh toán!"; 
+      dialogTitle.value='Thông báo'; 
+      dialogMessage.value = paymentMsg.value; 
+      showDialog.value = true; 
+      return; 
+    }
+    if(!name.value || !email.value || !phone.value) 
+      { paymentMsg.value = "Vui lòng nhập đầy đủ thông tin liên lạc!"; 
+        dialogTitle.value='Thông báo'; 
+        dialogMessage.value = paymentMsg.value; 
+        showDialog.value = true;
+       return; 
+      }
+    if(cartEmpty.value) 
+      { paymentMsg.value = "Bạn chưa chọn vé nào."; 
+        dialogTitle.value='Thông báo'; 
+        dialogMessage.value = paymentMsg.value; 
+        showDialog.value = true; return; 
+      }
 
     // Tổng số vé của giỏ không được vượt maxAvailable
     const totalQty = cartList.value.reduce((sum, item) => sum + item.quantity, 0);

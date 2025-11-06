@@ -201,9 +201,28 @@ app.post("/event-review", async (req, res) => {
       return res.status(400).json({ message: "Thiếu thông tin bắt buộc!" });
     }
 
+    if (!user_id) {
+      console.log("Validation failed - user_id is required");
+      return res.status(400).json({ message: "Bạn cần đăng nhập để đánh giá!" });
+    }
+
     if (rating < 1 || rating > 5) {
       console.log("Validation failed - invalid rating:", rating);
       return res.status(400).json({ message: "Rating phải từ 1-5!" });
+    }
+
+    // Kiểm tra xem user đã đánh giá event này chưa
+    const [existingReviews] = await pool.query(
+      "SELECT id FROM reviews WHERE event_id = ? AND user_id = ?",
+      [event_id, user_id]
+    );
+
+    if (existingReviews.length > 0) {
+      console.log("User has already reviewed this event");
+      return res.status(400).json({ 
+        message: "Bạn đã đánh giá sự kiện này rồi!",
+        code: "DUPLICATE_REVIEW"
+      });
     }
 
     // Xử lý content nếu null/undefined
@@ -241,6 +260,15 @@ app.post("/event-review", async (req, res) => {
     console.error("Error message:", err.message);
     console.error("Error code:", err.code);
     console.error("Error sqlState:", err.sqlState);
+    
+    // Kiểm tra nếu là duplicate entry error từ database
+    if (err.code === 'ER_DUP_ENTRY' || err.message.includes('Duplicate entry')) {
+      return res.status(400).json({ 
+        message: "Bạn đã đánh giá sự kiện này rồi!",
+        code: "DUPLICATE_REVIEW"
+      });
+    }
+    
     console.error("========================");
     res.status(500).json({ message: "Lỗi server. Vui lòng thử lại." });
   }
