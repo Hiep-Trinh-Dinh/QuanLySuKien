@@ -1383,6 +1383,34 @@ app.get("/admin/users", async (req, res) => {
   }
 });
 
+// POST /admin/users - Tạo user (admin)
+app.post("/admin/users", async (req, res) => {
+  try {
+    const { username, email, password, role , full_name, phone } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Vui lòng cung cấp username, email và password.' });
+    }
+
+    // check duplicate email
+    const [existing] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
+    if (existing.length > 0) {
+      return res.status(400).json({ message: 'Email đã được sử dụng.' });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+    const now = new Date();
+    const [result] = await pool.query(
+      "INSERT INTO users (username, email, password, role, full_name, phone, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [username, email, hashed, role, full_name || null, phone || null, now]
+    );
+
+    res.json({ message: 'Tạo user thành công!', id: result.insertId });
+  } catch (err) {
+    console.error('Error in POST /admin/users:', err);
+    res.status(500).json({ message: 'Lỗi server khi tạo user.' });
+  }
+});
+
 // PUT /admin/users/:id - Cập nhật quyền người dùng
 app.put("/admin/users/:id", async (req, res) => {
   try {

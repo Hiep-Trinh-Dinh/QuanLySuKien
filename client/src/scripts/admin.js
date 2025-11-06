@@ -111,7 +111,9 @@ export async function getUsers(params = {}) {
 }
 
 export async function createUser(userData) {
+  
   try {
+    console.log('Creating user with data:', userData);
     const res = await axios.post(`${API_URL}/admin/users`, userData);
     return res.data;
   } catch (error) {
@@ -184,7 +186,7 @@ export async function deleteTicket(id) {
 // CATEGORIES
 export async function createCategory(data) {
   try {
-    const res = await axios.post(`${API_URL}/categories`, data);
+    const res = await axios.post(`${API_URL}/admin/categories`, data);
     return res.data;
   } catch (error) {
     console.error('Lỗi khi tạo category:', error);
@@ -194,7 +196,7 @@ export async function createCategory(data) {
 
 export async function updateCategory(id, data) {
   try {
-    const res = await axios.put(`${API_URL}/categories/${id}`, data);
+    const res = await axios.put(`${API_URL}/admin/categories/${id}`, data);
     return res.data;
   } catch (error) {
     console.error(`Lỗi khi cập nhật category ${id}:`, error);
@@ -204,7 +206,7 @@ export async function updateCategory(id, data) {
 
 export async function deleteCategory(id) {
   try {
-    const res = await axios.delete(`${API_URL}/categories/${id}`);
+    const res = await axios.delete(`${API_URL}/admin/categories/${id}`);
     return res.data;
   } catch (error) {
     console.error(`Lỗi khi xóa category ${id}:`, error);
@@ -215,7 +217,7 @@ export async function deleteCategory(id) {
 // VENUES
 export async function createVenue(data) {
   try {
-    const res = await axios.post(`${API_URL}/venues`, data);
+    const res = await axios.post(`${API_URL}/admin/venues`, data);
     return res.data;
   } catch (error) {
     console.error('Lỗi khi tạo venue:', error);
@@ -225,7 +227,7 @@ export async function createVenue(data) {
 
 export async function updateVenue(id, data) {
   try {
-    const res = await axios.put(`${API_URL}/venues/${id}`, data);
+    const res = await axios.put(`${API_URL}/admin/venues/${id}`, data);
     return res.data;
   } catch (error) {
     console.error(`Lỗi khi cập nhật venue ${id}:`, error);
@@ -235,7 +237,7 @@ export async function updateVenue(id, data) {
 
 export async function deleteVenue(id) {
   try {
-    const res = await axios.delete(`${API_URL}/venues/${id}`);
+    const res = await axios.delete(`${API_URL}/admin/venues/${id}`);
     return res.data;
   } catch (error) {
     console.error(`Lỗi khi xóa venue ${id}:`, error);
@@ -246,7 +248,7 @@ export async function deleteVenue(id) {
 // REVIEWS
 export async function getReviews(params = {}) {
   try {
-    const res = await axios.get(`${API_URL}/reviews`, { params });
+    const res = await axios.get(`${API_URL}/admin/reviews`, { params });
     return res.data;
   } catch (error) {
     console.error('Lỗi khi lấy reviews:', error);

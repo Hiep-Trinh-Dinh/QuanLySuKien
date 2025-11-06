@@ -30,13 +30,14 @@
       <div class="card" style="width:600px;max-width:95%;">
         <div class="card-body">
           <h5 class="card-title">{{ userForm.id ? 'Chỉnh sửa user' : 'Tạo user mới' }}</h5>
-          <div class="row g-2">
-            <div class="col-md-6"><label class="form-label">Username</label><input v-model="userForm.username" class="form-control" /></div>
-            <div class="col-md-6"><label class="form-label">Email</label><input v-model="userForm.email" class="form-control" /></div>
-            <div class="col-md-6"><label class="form-label">Role</label><select v-model="userForm.role" class="form-select"><option value="user">user</option><option value="admin">admin</option></select></div>
-            <div class="col-md-6"><label class="form-label">Phone</label><input v-model="userForm.phone" class="form-control" /></div>
-            <div class="col-12"><label class="form-label">Full name</label><input v-model="userForm.full_name" class="form-control" /></div>
-          </div>
+                <div class="row g-2">
+                  <div class="col-md-6"><label class="form-label">Username</label><input v-model="userForm.username" class="form-control" /></div>
+                  <div class="col-md-6"><label class="form-label">Email</label><input v-model="userForm.email" class="form-control" /></div>
+                  <div class="col-md-6"><label class="form-label">Role</label><select v-model="userForm.role" class="form-select"><option value="user">user</option><option value="admin">admin</option></select></div>
+                  <div class="col-md-6"><label class="form-label">Phone</label><input v-model="userForm.phone" class="form-control" /></div>
+                  <div class="col-md-6"><label class="form-label">Password</label><input v-model="userForm.password" type="password" placeholder="(Để trống để tạo mật khẩu tạm)" class="form-control" /></div>
+                  <div class="col-12"><label class="form-label">Full name</label><input v-model="userForm.full_name" class="form-control" /></div>
+                </div>
           <div class="mt-3 d-flex justify-content-end">
             <button class="btn btn-secondary me-2" @click="() => (showUserModal = false)">Hủy</button>
             <button class="btn btn-primary" @click="saveUser">Lưu</button>
@@ -53,9 +54,9 @@ import { getUsers, createUser, updateUser, deleteUser } from '../../../scripts/a
 
 const users = ref([]);
 const showUserModal = ref(false);
-const userForm = reactive({ id: null, username: '', email: '', role: 'user', full_name: '', phone: '' });
+const userForm = reactive({ id: null, username: '', email: '', role: 'user', full_name: '', phone: '', password: '' });
 
-function resetUserForm() { userForm.id = null; userForm.username = ''; userForm.email = ''; userForm.role = 'user'; userForm.full_name = ''; userForm.phone = ''; }
+function resetUserForm() { userForm.id = null; userForm.username = ''; userForm.email = ''; userForm.role = 'user'; userForm.full_name = ''; userForm.phone = ''; userForm.password = ''; }
 function openAddUser() { resetUserForm(); showUserModal.value = true; }
 function openEditUser(u) { userForm.id = u.id; userForm.username = u.username; userForm.email = u.email; userForm.role = u.role || 'user'; userForm.full_name = u.full_name; userForm.phone = u.phone; showUserModal.value = true; }
 
@@ -69,6 +70,8 @@ async function loadUsers() {
 async function saveUser() {
   try {
     const payload = { username: userForm.username, email: userForm.email, role: userForm.role, full_name: userForm.full_name, phone: userForm.phone };
+    // include password only when admin filled it
+    if (userForm.password) payload.password = userForm.password;
     if (userForm.id) await updateUser(userForm.id, payload);
     else await createUser(payload);
     showUserModal.value = false;
