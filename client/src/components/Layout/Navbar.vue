@@ -2,9 +2,24 @@
   <nav class="navbar">
     <div class="navbar-left">
       <ul class="navbar-menu">
-        <router-link to="/" class="navbar-menu-link">Home</router-link>
-        <router-link to="/explore-events" class="navbar-menu-link"> Events</router-link>
-        <router-link to="/tickets" class="navbar-menu-link">My Tickets</router-link>
+            <router-link 
+              to="/" 
+              class="navbar-menu-link"
+              exact
+              exact-active-class="navbar-active"
+            >Home</router-link>
+
+            <router-link 
+              to="/explore-events" 
+              class="navbar-menu-link" 
+              exact-active-class="navbar-active"
+            >Events</router-link>
+
+            <router-link 
+              to="/tickets" 
+              class="navbar-menu-link" 
+              exact-active-class="navbar-active"
+            >My Tickets</router-link>
       </ul>
     </div>
     <div class="navbar-right">

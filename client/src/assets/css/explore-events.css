@@ -73,9 +73,9 @@
   color: #2d2178;
 }
 .explore-category-list {
-  display: flex;
-  gap: 50px;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
 }
 .explore-category-item {
   background: #f7f5ff;
@@ -84,7 +84,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 220px;
+  width: 100%;
   box-shadow: none;
   cursor: pointer;
   transition: background 0.2s;
@@ -229,6 +229,23 @@
   gap: 18px;
   min-height: 56px;
 }
+
+/* Dòng lẻ */
+.explore-upcoming-item:nth-child(odd) {
+  background: #dfdbf6; /* đậm hơn */
+}
+
+/* Dòng chẵn */
+.explore-upcoming-item:nth-child(even) {
+  background: #efeef9; /* nhạt hơn */
+}
+/* 
+Hover nổi bật
+.explore-upcoming-item:hover {
+  background: #a79df1;
+  color: #fff;
+  cursor: pointer;
+} */
 .explore-upcoming-icon-bg {
   width: 40px;
   height: 40px;
@@ -263,7 +280,7 @@
 .explore-upcoming-arrow {
   margin-left: auto;
   color: #bbb;
-  font-size: 1.25rem;
+  font-size: 2.5rem;
   display: flex;
   align-items: center;
   text-decoration: none;
@@ -302,4 +319,5 @@
     width: 100%;
     min-width: unset;
   }
+  
 }
