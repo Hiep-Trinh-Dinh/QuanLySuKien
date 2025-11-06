@@ -13,7 +13,19 @@
     <div class="explore-section explore-categories">
       <div class="explore-section-title">Categories</div>
       <div class="explore-category-list">
-        <div v-for="cat in categories" :key="cat.id" class="explore-category-item">
+        <div 
+          class="explore-category-item"
+          :class="{ active: !selectedCategoryId }"
+          @click="setCategory(null)"
+        >
+          <span class="explore-category-icon-bg"><span class="explore-category-icon">🏷️</span></span>
+          <div class="explore-category-name">Tất cả</div>
+          <div class="explore-category-desc">Hiển thị mọi sự kiện</div>
+        </div>
+        <div v-for="cat in categories" :key="cat.id" 
+             class="explore-category-item"
+             :class="{ active: selectedCategoryId === cat.id }"
+             @click="setCategory(cat.id)">
           <span class="explore-category-icon-bg"><span class="explore-category-icon">🏷️</span></span>
           <div class="explore-category-name">{{ cat.name }}</div>
           <div class="explore-category-desc">{{ cat.description || '---' }}</div>
@@ -89,7 +101,9 @@ const {
   events,
   categories,
   searchText,
-  filteredSortedEvents
+  filteredSortedEvents,
+  selectedCategoryId,
+  setCategory
 } = useExploreEvents();
 </script>
 

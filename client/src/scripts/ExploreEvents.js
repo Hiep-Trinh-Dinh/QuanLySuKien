@@ -25,6 +25,7 @@ export function useExploreEvents() {
   const events = ref([]);
   const categories = ref([]);
   const searchText = ref('');
+  const selectedCategoryId = ref(null);
 
   onMounted(() => {
     fetchEvents(events);
@@ -34,12 +35,16 @@ export function useExploreEvents() {
   const filteredSortedEvents = computed(() => {
     const term = searchText.value.trim().toLowerCase();
     // nếu không nhập từ khóa thì trả toàn bộ, sắp theo thời gian
-    const list = !term ? events.value : events.value.filter(e => {
+    let list = !term ? events.value : events.value.filter(e => {
       const title = (e.title || '').toLowerCase();
       const dateISO = new Date(e.start_time).toISOString().slice(0,10); // yyyy-mm-dd
       const dateVI = new Date(e.start_time).toLocaleDateString('vi-VN'); // dd/mm/yyyy
       return title.includes(term) || dateISO.includes(term) || dateVI.includes(term);
     });
+    // lọc theo category nếu có chọn
+    if (selectedCategoryId.value) {
+      list = list.filter(e => Number(e.category_id) === Number(selectedCategoryId.value));
+    }
     return [...list].sort((a,b) => new Date(a.start_time) - new Date(b.start_time));
   });
 
@@ -47,6 +52,8 @@ export function useExploreEvents() {
     events,
     categories,
     searchText,
+    selectedCategoryId,
+    setCategory: (catId) => { selectedCategoryId.value = catId },
     filteredSortedEvents,
   }
 }
