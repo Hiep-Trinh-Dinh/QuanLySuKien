@@ -22,7 +22,7 @@
                      @click="onSelectType(t.Type)">
                 <div class="ticket-type-content">
                   <div class="ticket-type-name">Vé {{ t.Type }}</div>
-                  <div class="ticket-type-desc">Số vé còn lại: {{ remaining }}</div>
+                  <div class="ticket-type-desc">Số vé còn lại: {{ countRemainingByType(t.Type) }}</div>
                   <div class="ticket-type-price">{{ t.price ? t.price.toLocaleString() : '-' }} VND</div>
                 </div>
               </label>
@@ -168,6 +168,7 @@ const {
   showDialog,
   dialogTitle,
   dialogMessage,
-  closeDialog
+  closeDialog,
+  countRemainingByType
 } = useTicketPayment();
 </script>

@@ -222,6 +222,13 @@ export function useTicketPayment() {
     }
   }
 
+  // Đếm số vé còn lại của từng loại cho event này
+  function countRemainingByType(type) {
+    return ticketsRaw.value.filter(
+      ticket => ticket.Type === type && ticket.status === 'available'
+    ).length;
+  }
+
   return {
     ticketsRaw,
     ticketTypes,
@@ -263,6 +270,7 @@ export function useTicketPayment() {
     showDialog,
     dialogTitle,
     dialogMessage,
-    closeDialog
+    closeDialog,
+    countRemainingByType
   };
 }

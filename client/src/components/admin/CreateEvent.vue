@@ -297,9 +297,9 @@ function buildTicketsArray() {
     }
   };
 
-  addN('Student', event.value.tickets.student);
-  addN('Standard', event.value.tickets.standard);
-  addN('VIP', event.value.tickets.vip);
+  addN('student', event.value.tickets.student);
+  addN('standard', event.value.tickets.standard);
+  addN('vip', event.value.tickets.vip);
 
   return list;
 }
