@@ -203,7 +203,9 @@ app.post("/event-review", async (req, res) => {
 
     if (!user_id) {
       console.log("Validation failed - user_id is required");
-      return res.status(400).json({ message: "Bạn cần đăng nhập để đánh giá!" });
+      return res
+        .status(400)
+        .json({ message: "Bạn cần đăng nhập để đánh giá!" });
     }
 
     if (rating < 1 || rating > 5) {
@@ -219,9 +221,9 @@ app.post("/event-review", async (req, res) => {
 
     if (existingReviews.length > 0) {
       console.log("User has already reviewed this event");
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Bạn đã đánh giá sự kiện này rồi!",
-        code: "DUPLICATE_REVIEW"
+        code: "DUPLICATE_REVIEW",
       });
     }
 
@@ -260,15 +262,18 @@ app.post("/event-review", async (req, res) => {
     console.error("Error message:", err.message);
     console.error("Error code:", err.code);
     console.error("Error sqlState:", err.sqlState);
-    
+
     // Kiểm tra nếu là duplicate entry error từ database
-    if (err.code === 'ER_DUP_ENTRY' || err.message.includes('Duplicate entry')) {
-      return res.status(400).json({ 
+    if (
+      err.code === "ER_DUP_ENTRY" ||
+      err.message.includes("Duplicate entry")
+    ) {
+      return res.status(400).json({
         message: "Bạn đã đánh giá sự kiện này rồi!",
-        code: "DUPLICATE_REVIEW"
+        code: "DUPLICATE_REVIEW",
       });
     }
-    
+
     console.error("========================");
     res.status(500).json({ message: "Lỗi server. Vui lòng thử lại." });
   }
@@ -601,7 +606,9 @@ app.post("/purchase-ticket", async (req, res) => {
           if (availableTickets.length < qty) {
             await connection.rollback();
             connection.release();
-            return res.status(400).json({ message: `Không đủ vé loại ${type} cho sự kiện này!` });
+            return res
+              .status(400)
+              .json({ message: `Không đủ vé loại ${type} cho sự kiện này!` });
           }
 
           // Update từng ticket cho đúng user, giá, status, QR...
@@ -661,7 +668,11 @@ app.post("/purchase-ticket", async (req, res) => {
       if (availableTickets.length < quantity) {
         await connection.rollback();
         connection.release();
-        return res.status(400).json({ message: `Không đủ vé loại ${ticket_type} cho sự kiện này!` });
+        return res
+          .status(400)
+          .json({
+            message: `Không đủ vé loại ${ticket_type} cho sự kiện này!`,
+          });
       }
 
       const updatedIds = [];
@@ -987,7 +998,8 @@ app.get("/user-profile", async (req, res) => {
 // PUT /update-profile - Cập nhật thông tin user
 app.put("/update-profile", async (req, res) => {
   try {
-    const { user_id, username, full_name, phone, avatar_data, password } = req.body;
+    const { user_id, username, full_name, phone, avatar_data, password } =
+      req.body;
     if (!user_id) return res.status(400).json({ message: "Thiếu user_id!" });
 
     const [users] = await pool.query(
@@ -1199,12 +1211,12 @@ app.put("/admin/events/:id", async (req, res) => {
       venue_id,
       start_time,
       end_time,
-      status,
+      // status,
       image_url,
     } = req.body;
 
     await pool.query(
-      "UPDATE events SET title = ?, description = ?, category_id = ?, venue_id = ?, start_time = ?, end_time = ?, status = ?, image_url = ? WHERE id = ?",
+      "UPDATE events SET title = ?, description = ?, category_id = ?, venue_id = ?, start_time = ?, end_time = ?,  image_url = ? WHERE id = ?",
       [
         title,
         description,
@@ -1212,7 +1224,7 @@ app.put("/admin/events/:id", async (req, res) => {
         venue_id,
         start_time,
         end_time,
-        status,
+        // status,
         image_url,
         eventId,
       ]
@@ -1319,15 +1331,20 @@ app.get("/admin/users", async (req, res) => {
 // POST /admin/users - Tạo user (admin)
 app.post("/admin/users", async (req, res) => {
   try {
-    const { username, email, password, role , full_name, phone } = req.body;
+    const { username, email, password, role, full_name, phone } = req.body;
     if (!username || !email || !password) {
-      return res.status(400).json({ message: 'Vui lòng cung cấp username, email và password.' });
+      return res
+        .status(400)
+        .json({ message: "Vui lòng cung cấp username, email và password." });
     }
 
     // check duplicate email
-    const [existing] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
+    const [existing] = await pool.query(
+      "SELECT id FROM users WHERE email = ?",
+      [email]
+    );
     if (existing.length > 0) {
-      return res.status(400).json({ message: 'Email đã được sử dụng.' });
+      return res.status(400).json({ message: "Email đã được sử dụng." });
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -1337,10 +1354,10 @@ app.post("/admin/users", async (req, res) => {
       [username, email, hashed, role, full_name || null, phone || null, now]
     );
 
-    res.json({ message: 'Tạo user thành công!', id: result.insertId });
+    res.json({ message: "Tạo user thành công!", id: result.insertId });
   } catch (err) {
-    console.error('Error in POST /admin/users:', err);
-    res.status(500).json({ message: 'Lỗi server khi tạo user.' });
+    console.error("Error in POST /admin/users:", err);
+    res.status(500).json({ message: "Lỗi server khi tạo user." });
   }
 });
 
