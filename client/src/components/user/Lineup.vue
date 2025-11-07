@@ -29,8 +29,7 @@ async function fetchTickets() {
   } catch (e) {
     tickets.value = [];
   }
-  loadingTickets.value = false;
-}
+  loadingTickets.value = false;}
 watch(
   () => props.event?.id,
   () => {

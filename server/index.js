@@ -514,6 +514,7 @@ app.get("/ticket-detail", async (req, res) => {
         t.qr_code,
         e.id AS event_id,
         e.title,
+        e.image_url,  
         e.description,
         e.start_time,
         e.end_time,
