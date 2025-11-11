@@ -150,7 +150,7 @@ watch(
   { immediate: true, deep: true }
 );
 </script>
-
+  
 <style scoped>
 .icon {
   border-radius: 10px;
