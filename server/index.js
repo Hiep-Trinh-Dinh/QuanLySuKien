@@ -1270,6 +1270,43 @@ app.put("/admin/events/:id", async (req, res) => {
       image_url,
     } = req.body;
 
+    // If client sent a data URL for image (base64), upload it to Cloudinary and replace image_url
+    let finalImageUrl = image_url;
+
+    if (
+      finalImageUrl &&
+      typeof finalImageUrl === "string" &&
+      finalImageUrl.startsWith("data:")
+    ) {
+      try {
+        // Optionally remove previous cloud image if present
+        const [existing] = await pool.query("SELECT image_url FROM events WHERE id = ?", [eventId]);
+        const currentImage = existing?.[0]?.image_url || null;
+        if (currentImage && currentImage.includes("res.cloudinary.com")) {
+          try {
+            const match = currentImage.match(/\/upload\/(?:v\d+\/)?(.+)\.(?:jpg|jpeg|png|gif|webp|svg|bmp)/i);
+            const publicIdRaw = match ? match[1] : null;
+            const publicId = publicIdRaw ? decodeURIComponent(publicIdRaw) : null;
+            if (publicId) {
+              await cloudinary.uploader.destroy(publicId, { resource_type: "image" });
+            }
+          } catch (delErr) {
+            console.warn("Unable to delete previous event image on Cloudinary (continuing):", delErr.message || delErr);
+          }
+        }
+
+        const uploadResult = await cloudinary.uploader.upload(finalImageUrl, {
+          folder: "Media Library/Assets",
+          resource_type: "image",
+        });
+        finalImageUrl = uploadResult.secure_url;
+        console.log("Uploaded event image to Cloudinary (update):", finalImageUrl);
+      } catch (err) {
+        console.error("Failed to upload event image to Cloudinary (update):", err);
+        return res.status(500).json({ message: "Lỗi khi upload hình ảnh sự kiện." });
+      }
+    }
+
     await pool.query(
       "UPDATE events SET title = ?, description = ?, category_id = ?, venue_id = ?, start_time = ?, end_time = ?, status = ?, image_url = ? WHERE id = ?",
       [
@@ -1280,7 +1317,7 @@ app.put("/admin/events/:id", async (req, res) => {
         start_time,
         end_time,
         status,
-        image_url,
+        finalImageUrl,
         eventId,
       ]
     );
@@ -1411,20 +1448,91 @@ app.post("/admin/users", async (req, res) => {
   }
 });
 
-// PUT /admin/users/:id - Cập nhật quyền người dùng
+// PUT /admin/users/:id - Cập nhật thông tin người dùng (username, email, role, full_name, phone, password)
 app.put("/admin/users/:id", async (req, res) => {
   try {
     const userId = req.params.id;
-    const { role } = req.body;
+    const { username, email, role, full_name, phone, password } = req.body;
 
-    await pool.query("UPDATE users SET role = ? WHERE id = ?", [role, userId]);
+    if (!username || !email) {
+      return res.status(400).json({ message: 'Vui lòng cung cấp username và email.' });
+    }
 
-    res.json({ message: "Cập nhật quyền người dùng thành công!" });
+    // check duplicate email (exclude current user)
+    const [existing] = await pool.query("SELECT id FROM users WHERE email = ? AND id != ?", [email, userId]);
+    if (existing.length > 0) {
+      return res.status(400).json({ message: 'Email đã được sử dụng bởi người khác.' });
+    }
+
+    const fields = [];
+    const params = [];
+
+    fields.push('username = ?'); params.push(username);
+    fields.push('email = ?'); params.push(email);
+    if (role !== undefined) { fields.push('role = ?'); params.push(role); }
+    if (full_name !== undefined) { fields.push('full_name = ?'); params.push(full_name || null); }
+    if (phone !== undefined) { fields.push('phone = ?'); params.push(phone || null); }
+
+    if (password !== undefined && password !== null && password !== '') {
+      if (typeof password !== 'string' || password.length < 6) {
+        return res.status(400).json({ message: 'Mật khẩu mới phải có ít nhất 6 ký tự.' });
+      }
+      const hashed = await bcrypt.hash(password, 10);
+      fields.push('password = ?'); params.push(hashed);
+    }
+
+    if (fields.length === 0) {
+      return res.status(400).json({ message: 'Không có trường để cập nhật.' });
+    }
+
+    const sql = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
+    params.push(userId);
+
+    await pool.query(sql, params);
+
+    res.json({ message: 'Cập nhật thông tin người dùng thành công!' });
   } catch (err) {
-    console.error("Error in /admin/users/:id:", err);
-    res
-      .status(500)
-      .json({ message: "Lỗi server khi cập nhật quyền người dùng." });
+    console.error('Error in /admin/users/:id:', err);
+    res.status(500).json({ message: 'Lỗi server khi cập nhật người dùng.' });
+  }
+});
+
+// DELETE /admin/users/:id - Xóa user (admin)
+app.delete("/admin/users/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Không cho phép xóa nếu user đã có vé đã bán
+    const [soldCountRows] = await pool.query(
+      'SELECT COUNT(*) as count FROM tickets WHERE user_id = ? AND status = "sold"',
+      [userId]
+    );
+    const soldCount = Number(soldCountRows?.[0]?.count) || 0;
+    if (soldCount > 0) {
+      return res.status(400).json({ message: 'Không thể xóa user đã có vé đã bán.' });
+    }
+
+    // Không cho phép xóa nếu user đang là người tạo event (foreign key events.created_by)
+    const [createdEvents] = await pool.query(
+      'SELECT COUNT(*) as count FROM events WHERE created_by = ?',
+      [userId]
+    );
+    const createdCount = Number(createdEvents?.[0]?.count) || 0;
+    if (createdCount > 0) {
+      return res.status(400).json({ message: 'Không thể xóa user vì người này là người tạo một hoặc nhiều sự kiện. Hãy chuyển quyền sở hữu sự kiện hoặc xóa sự kiện trước.' });
+    }
+
+    // Xóa các dữ liệu liên quan (reviews, support tickets, payments, tickets chưa bán)
+    await pool.query('DELETE FROM reviews WHERE user_id = ?', [userId]);
+    await pool.query('DELETE FROM support_tickets WHERE user_id = ?', [userId]);
+    await pool.query('DELETE FROM payments WHERE user_id = ?', [userId]);
+    await pool.query('DELETE FROM tickets WHERE user_id = ?', [userId]);
+    await pool.query('DELETE FROM users WHERE id = ?', [userId]);
+
+    res.json({ message: 'Xóa user thành công.' });
+  } catch (err) {
+    console.error('Error in DELETE /admin/users/:id', err);
+    res.status(500).json({ message: 'Lỗi server khi xóa user.' });
   }
 });
 
@@ -1487,23 +1595,97 @@ app.get("/admin/tickets", async (req, res) => {
   }
 });
 
+// DELETE /admin/tickets/:id - only allow deletion of tickets that are not sold
+app.delete('/admin/tickets/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const [rows] = await pool.query('SELECT id, status, user_id FROM tickets WHERE id = ?', [id]);
+    if (!rows || rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy vé.' });
+
+    const ticket = rows[0];
+    // refuse if already sold or assigned to a user
+    if (ticket.status === 'sold' || ticket.user_id) {
+      return res.status(400).json({ message: 'Không thể xóa vé đã được bán hoặc đã được gán cho người dùng.' });
+    }
+
+    await pool.query('DELETE FROM tickets WHERE id = ?', [id]);
+    res.json({ message: 'Xóa vé thành công.' });
+  } catch (err) {
+    console.error('Error in DELETE /admin/tickets/:id', err);
+    res.status(500).json({ message: 'Lỗi server khi xóa vé.' });
+  }
+});
+
+// POST /admin/tickets - tạo vé mới (admin)
+app.post('/admin/tickets', async (req, res) => {
+  try {
+    const { event_id, seat_number, Type, price, status, user_id } = req.body;
+    if (!event_id) return res.status(400).json({ message: 'Thiếu event_id' });
+
+    // ensure event exists
+    const [events] = await pool.query('SELECT id FROM events WHERE id = ?', [event_id]);
+    if (!events || events.length === 0) return res.status(404).json({ message: 'Event không tồn tại' });
+
+    // determine seat number if not provided
+    let seat = seat_number;
+    if (!seat) {
+      const [rows] = await pool.query('SELECT MAX(seat_number) as maxSeat FROM tickets WHERE event_id = ?', [event_id]);
+      const maxSeat = rows && rows[0] && rows[0].maxSeat ? Number(rows[0].maxSeat) : 0;
+      seat = maxSeat + 1;
+    } else {
+      // check uniqueness
+      const [dup] = await pool.query('SELECT id FROM tickets WHERE event_id = ? AND seat_number = ?', [event_id, seat]);
+      if (dup && dup.length) return res.status(400).json({ message: 'Seat number đã tồn tại cho event này' });
+    }
+
+    const ticketStatus = user_id ? (status || 'sold') : (status || 'available');
+    const purchasedAt = user_id ? new Date() : null;
+
+    const insertSql = 'INSERT INTO tickets (event_id, user_id, seat_number, Type, price, status, qr_code, purchased_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+    const [result] = await pool.query(insertSql, [event_id, user_id || null, seat, Type || 'standard', Number(price) || 0, ticketStatus, null, purchasedAt]);
+    const ticketId = result.insertId;
+
+
+    res.json({ message: 'Tạo vé thành công', ticketId });
+  } catch (err) {
+    console.error('Error in POST /admin/tickets', err);
+    res.status(500).json({ message: 'Lỗi server khi tạo vé.' });
+  }
+});
+
 // GET /admin/reviews - Quản lý đánh giá
 app.get("/admin/reviews", async (req, res) => {
   try {
-    const { page = 1, limit = 10, rating, event_id } = req.query;
+    const { page = 1, limit = 10, rating, event_id, event, user } = req.query;
     const offset = (page - 1) * limit;
 
     let whereClause = "1=1";
-    let params = [];
+    const params = [];
 
+    // rating exact match
     if (rating) {
       whereClause += " AND r.rating = ?";
       params.push(rating);
     }
 
+    // event filter: event_id preferred, otherwise search by title (partial)
     if (event_id) {
       whereClause += " AND r.event_id = ?";
       params.push(event_id);
+    } else if (event) {
+      whereClause += " AND e.title LIKE ?";
+      params.push(`%${event}%`);
+    }
+
+    // user filter: if numeric treat as user_id, otherwise search username/email
+    if (user) {
+      if (/^\d+$/.test(String(user))) {
+        whereClause += " AND r.user_id = ?";
+        params.push(user);
+      } else {
+        whereClause += " AND (u.username LIKE ? OR u.email LIKE ? )";
+        params.push(`%${user}%`, `%${user}%`);
+      }
     }
 
     const [reviews] = await pool.query(
@@ -1511,7 +1693,8 @@ app.get("/admin/reviews", async (req, res) => {
       SELECT 
         r.*,
         e.title as event_title,
-        u.username as reviewer_name
+        u.username as reviewer_name,
+        u.email as reviewer_email
       FROM reviews r
       LEFT JOIN events e ON r.event_id = e.id
       LEFT JOIN users u ON r.user_id = u.id
@@ -1524,7 +1707,10 @@ app.get("/admin/reviews", async (req, res) => {
 
     const [totalCount] = await pool.query(
       `
-      SELECT COUNT(*) as count FROM reviews r WHERE ${whereClause}
+      SELECT COUNT(*) as count FROM reviews r
+      LEFT JOIN events e ON r.event_id = e.id
+      LEFT JOIN users u ON r.user_id = u.id
+      WHERE ${whereClause}
     `,
       params
     );
@@ -1668,6 +1854,78 @@ app.post("/admin/venues", async (req, res) => {
   } catch (err) {
     console.error("Error in /admin/venues:", err);
     res.status(500).json({ message: "Lỗi server khi tạo venue." });
+  }
+});
+
+// PUT /admin/venues/:id - Cập nhật venue
+app.put("/admin/venues/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { name, address, capacity, description } = req.body;
+    if (!name || !address) return res.status(400).json({ message: "Thiếu thông tin venue!" });
+
+    // Optional: ensure no other venue has the same name
+    const [existing] = await pool.query("SELECT id FROM venues WHERE name = ? AND id != ?", [name, id]);
+    if (existing.length > 0) return res.status(400).json({ message: "Tên venue đã tồn tại." });
+
+    await pool.query("UPDATE venues SET name = ?, address = ?, capacity = ?, description = ? WHERE id = ?", [name, address, capacity, description, id]);
+    res.json({ message: "Cập nhật venue thành công!" });
+  } catch (err) {
+    console.error("Error in PUT /admin/venues/:id:", err);
+    res.status(500).json({ message: "Lỗi server khi cập nhật venue." });
+  }
+});
+
+// DELETE /admin/venues/:id - Xóa venue (refuse if events reference it)
+app.delete("/admin/venues/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    // Check for events referencing this venue
+    const [rows] = await pool.query("SELECT COUNT(*) as count FROM events WHERE venue_id = ?", [id]);
+    if (rows && rows[0] && rows[0].count > 0) {
+      return res.status(400).json({ message: "Không thể xóa venue đang được dùng bởi sự kiện. Hãy chuyển hoặc xóa các sự kiện trước." });
+    }
+    await pool.query("DELETE FROM venues WHERE id = ?", [id]);
+    res.json({ message: "Xóa venue thành công" });
+  } catch (err) {
+    console.error("Error in DELETE /admin/venues/:id:", err);
+    res.status(500).json({ message: "Lỗi server khi xóa venue." });
+  }
+});
+
+// PUT /admin/categories/:id - Cập nhật category
+app.put("/admin/categories/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { name, description } = req.body;
+    if (!name) return res.status(400).json({ message: "Thiếu tên category!" });
+
+    // Optional: ensure no other category has the same name
+    const [existing] = await pool.query("SELECT id FROM categories WHERE name = ? AND id != ?", [name, id]);
+    if (existing.length > 0) return res.status(400).json({ message: "Tên category đã tồn tại." });
+
+    await pool.query("UPDATE categories SET name = ?, description = ? WHERE id = ?", [name, description, id]);
+    res.json({ message: "Cập nhật category thành công!" });
+  } catch (err) {
+    console.error("Error in PUT /admin/categories/:id:", err);
+    res.status(500).json({ message: "Lỗi server khi cập nhật category." });
+  }
+});
+
+// DELETE /admin/categories/:id - Xóa category (refuse if events reference it)
+app.delete("/admin/categories/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    // Check for events referencing this category
+    const [rows] = await pool.query("SELECT COUNT(*) as count FROM events WHERE category_id = ?", [id]);
+    if (rows && rows[0] && rows[0].count > 0) {
+      return res.status(400).json({ message: "Không thể xóa category đang được dùng bởi sự kiện. Hãy chuyển hoặc xóa các sự kiện trước." });
+    }
+    await pool.query("DELETE FROM categories WHERE id = ?", [id]);
+    res.json({ message: "Xóa category thành công" });
+  } catch (err) {
+    console.error("Error in DELETE /admin/categories/:id:", err);
+    res.status(500).json({ message: "Lỗi server khi xóa category." });
   }
 });
 

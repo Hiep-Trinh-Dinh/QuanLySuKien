@@ -2,10 +2,10 @@
   <div>
     <div class="d-flex justify-content-between align-items-center">
       <h4>Events</h4>
-      <div>
-        <button class="btn btn-sm btn-primary" @click="openAddEvent">+ Thêm sự kiện</button>
-      </div>
     </div>
+
+    <!-- inline message area -->
+    <div v-if="message" :class="`alert alert-${messageType} mt-2`">{{ message }}</div>
 
     <table class="table table-sm table-striped mt-3">
       <thead>
@@ -46,58 +46,74 @@
       </tbody>
     </table>
 
-  <div v-if="showEventModal" class="modal-backdrop d-flex align-items-start justify-content-center" style="position:fixed;inset:0;z-index:1050;overflow:auto;padding-top:40px;background:rgba(0,0,0,0.18);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);">
-      <div class="card" style="width:900px;max-width:95%;">
+  <div v-if="showEventModal" class="modal-backdrop d-flex align-items-start justify-content-center" style="position:fixed;inset:0;z-index:1050;overflow:auto;padding-top:12px;background:rgba(0,0,0,0.10);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);">
+      <div class="card compact-modal" style="width:600px;max-width:95%;">
         <div class="card-body">
           <h5 class="card-title">{{ isEditing ? 'Chỉnh sửa sự kiện' : 'Tạo sự kiện mới' }}</h5>
-          <div class="row g-2">
-            <div class="col-md-6">
+          <div class="row g-0">
+            <div class="col-12">
               <label class="form-label">Title</label>
               <input v-model="eventForm.title" class="form-control" />
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 mt-2">
               <label class="form-label">Category</label>
               <select v-model="eventForm.category_id" class="form-select">
                 <option :value="null">-- chọn --</option>
                 <option v-for="c in categoriesList" :key="c.id" :value="c.id">{{ c.name }}</option>
               </select>
             </div>
-            <div class="col-12">
-              <label class="form-label">Description</label>
-              <textarea v-model="eventForm.description" class="form-control" rows="3"></textarea>
-            </div>
-            <div class="col-md-6">
+            <div class="col-md-6 mt-2">
               <label class="form-label">Venue</label>
               <select v-model="eventForm.venue_id" class="form-select">
                 <option :value="null">-- chọn --</option>
                 <option v-for="v in venuesList" :key="v.id" :value="v.id">{{ v.name }}</option>
               </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-12 mt-2">
+              <label class="form-label">Description</label>
+              <textarea v-model="eventForm.description" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6 mt-2">
               <label class="form-label">Start</label>
               <input v-model="eventForm.start_time" type="datetime-local" class="form-control" />
             </div>
-            <div class="col-md-3">
+            <div class="col-md-6 mt-2">
               <label class="form-label">End</label>
               <input v-model="eventForm.end_time" type="datetime-local" class="form-control" />
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 mt-2">
               <label class="form-label">Standard price</label>
-              <input v-model.number="eventForm.standard_price" type="number" class="form-control" />
+              <input v-model.number="eventForm.standard_price" :disabled="isEditing" type="number" class="form-control" />
             </div>
-            <div class="col-md-8">
+            <div v-if="isEditing" class="col-md-8 mt-2">
+              <label class="form-label">Ticket prices</label>
+              <div class="d-flex" style="gap:8px;">
+                <div style="flex:1">
+                  <div class="form-control-plaintext">{{ priceStudent }}</div>
+                  <small class="text-muted">Student (½)</small>
+                </div>
+                <div style="flex:1">
+                  <div class="form-control-plaintext">{{ priceStandard }}</div>
+                  <small class="text-muted">Standard</small>
+                </div>
+                <div style="flex:1">
+                  <div class="form-control-plaintext">{{ priceHigh }}</div>
+                  <small class="text-muted">VIP (×2)</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mt-2">
               <label class="form-label">Image</label>
-              <input type="file" class="form-control" @change="(e)=>{ eventForm.image_file = e.target.files[0]; }" accept="image/*" />
+              <input type="file" class="form-control" @change="onImageChange" accept="image/*" />
               <div class="mt-2">
-                <img v-if="eventForm.image_file" :src="URL.createObjectURL(eventForm.image_file)" alt="preview" style="max-height:80px;object-fit:cover;border-radius:6px" />
-                <img v-else-if="eventForm.image_url" :src="eventForm.image_url" alt="preview" style="max-height:80px;object-fit:cover;border-radius:6px" />
+                <img v-if="imagePreview" :src="imagePreview" alt="preview" class="compact-preview" />
               </div>
             </div>
           </div>
 
-          <div class="mt-3 d-flex justify-content-end">
-            <button class="btn btn-secondary me-2" @click="() => (showEventModal = false)">Hủy</button>
-            <button class="btn btn-primary" @click="saveEvent">Lưu</button>
+          <div class="mt-2 d-flex justify-content-end">
+            <button class="btn btn-sm btn-secondary me-2" @click="() => (showEventModal = false)">Hủy</button>
+            <button class="btn btn-sm btn-primary" @click="saveEvent">Lưu</button>
           </div>
         </div>
       </div>
@@ -106,7 +122,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { fetchEvents, getCategories, getVenues, createEvent, updateEvent, deleteEvent } from '../../../scripts/admin';
 
 const eventsList = ref([]);
@@ -116,10 +132,73 @@ const venuesList = ref([]);
 const showEventModal = ref(false);
 const isEditing = ref(false);
 const deleting = ref(null);
+const message = ref('');
+const messageType = ref('success');
 const eventForm = reactive({ id: null, title: '', description: '', category_id: null, venue_id: null, start_time: '', end_time: '', standard_price: 0, image_file: null, image_url: null });
 
+// image preview handling (avoid calling global URL.createObjectURL in template)
+const imagePreview = ref(null);
+let currentPreviewUrl = null;
+
+function setImageFile(file) {
+  // revoke previous
+  try {
+    if (currentPreviewUrl) {
+      URL.revokeObjectURL(currentPreviewUrl);
+      currentPreviewUrl = null;
+    }
+  } catch (e) {
+    // ignore
+  }
+  if (!file) {
+    imagePreview.value = eventForm.image_url || null;
+    eventForm.image_file = null;
+    return;
+  }
+  currentPreviewUrl = URL.createObjectURL(file);
+  imagePreview.value = currentPreviewUrl;
+  eventForm.image_file = file;
+}
+
+function onImageChange(e) {
+  const file = e.target.files && e.target.files[0];
+  setImageFile(file);
+}
+
+// revoke when component unmounts
+import { onBeforeUnmount } from 'vue';
+onBeforeUnmount(() => {
+  try { if (currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl); } catch (e) {}
+});
+
+// computed ticket tiers (match CreateEvent.vue logic)
+const priceStandardNumeric = computed(() => Math.round(Number(eventForm.standard_price) || 0));
+const priceStudentNumeric = computed(() => Math.round(priceStandardNumeric.value * 0.5));
+const priceVipNumeric = computed(() => Math.round(priceStandardNumeric.value * 2));
+
+function formatCurrency(v) {
+  const n = Number(v) || 0;
+  return new Intl.NumberFormat('vi-VN').format(n) + ' ₫';
+}
+
+const priceStandard = computed(() => formatCurrency(priceStandardNumeric.value));
+const priceStudent = computed(() => formatCurrency(priceStudentNumeric.value));
+const priceHigh = computed(() => formatCurrency(priceVipNumeric.value));
+
 function resetEventForm() {
-  eventForm.id = null; eventForm.title = ''; eventForm.description = ''; eventForm.category_id = null; eventForm.venue_id = null; eventForm.start_time = ''; eventForm.end_time = ''; eventForm.standard_price = 0; eventForm.image_file = null; eventForm.image_url = null;
+  eventForm.id = null;
+  eventForm.title = '';
+  eventForm.description = '';
+  eventForm.category_id = null;
+  eventForm.venue_id = null;
+  eventForm.start_time = '';
+  eventForm.end_time = '';
+  eventForm.standard_price = 0;
+  eventForm.image_file = null;
+  eventForm.image_url = null;
+  // clear preview
+  try { if (currentPreviewUrl) { URL.revokeObjectURL(currentPreviewUrl); currentPreviewUrl = null; } } catch (e) {}
+  imagePreview.value = null;
 }
 
 function fileToDataUrl(file) {
@@ -147,25 +226,85 @@ async function loadCategoriesAndVenues() {
   } catch (err) { console.error('Failed to load cats/vens', err); }
 }
 
-function openAddEvent() { resetEventForm(); isEditing.value = false; showEventModal.value = true; }
-function openEditEvent(ev) { isEditing.value = true; eventForm.id = ev.id; eventForm.title = ev.title || ''; eventForm.description = ev.description || ''; eventForm.category_id = ev.category_id || null; eventForm.venue_id = ev.venue_id || null; eventForm.start_time = ev.start_time ? ev.start_time.split('.').shift() : ev.start_time || ''; eventForm.end_time = ev.end_time ? ev.end_time.split('.').shift() : ev.end_time || ''; eventForm.standard_price = ev.standard_price || 0; eventForm.image_url = ev.image_url || null; eventForm.image_file = null; showEventModal.value = true; }
+function openEditEvent(ev) {
+  isEditing.value = true;
+  eventForm.id = ev.id;
+  eventForm.title = ev.title || '';
+  eventForm.description = ev.description || '';
+  eventForm.category_id = ev.category_id || null;
+  eventForm.venue_id = ev.venue_id || null;
+  eventForm.start_time = ev.start_time ? ev.start_time.split('.').shift() : ev.start_time || '';
+  eventForm.end_time = ev.end_time ? ev.end_time.split('.').shift() : ev.end_time || '';
+  eventForm.standard_price = ev.standard_price || 0;
+  eventForm.image_url = ev.image_url || null;
+  eventForm.image_file = null;
+  // set preview to existing image url when editing
+  imagePreview.value = eventForm.image_url || null;
+  showEventModal.value = true;
+}
 
 async function saveEvent() {
   try {
     const payload = { title: eventForm.title, description: eventForm.description, category_id: eventForm.category_id, venue_id: eventForm.venue_id, start_time: eventForm.start_time, end_time: eventForm.end_time, standard_price: Number(eventForm.standard_price) || 0 };
     if (eventForm.image_file) payload.image_url = await fileToDataUrl(eventForm.image_file);
     else if (eventForm.image_url) payload.image_url = eventForm.image_url;
-    if (isEditing.value && eventForm.id) await updateEvent(eventForm.id, payload); else await createEvent(payload);
+    let res;
+    if (isEditing.value && eventForm.id) res = await updateEvent(eventForm.id, payload); else res = await createEvent(payload);
+    // show server message when available
+    if (res && res.message) {
+      message.value = res.message;
+      messageType.value = 'success';
+    } else {
+      message.value = isEditing.value ? 'Cập nhật sự kiện thành công' : 'Tạo sự kiện thành công';
+      messageType.value = 'success';
+    }
+    // auto-dismiss
+    setTimeout(() => { message.value = ''; }, 4000);
     showEventModal.value = false; await loadEvents();
-  } catch (err) { console.error('Failed to save event', err); alert('Lỗi khi lưu sự kiện. Xem console để biết chi tiết.'); }
+  } catch (err) {
+    console.error('Failed to save event', err);
+    const msg = err?.response?.data?.message || 'Lỗi khi lưu sự kiện. Xem console để biết chi tiết.';
+    message.value = msg;
+    messageType.value = 'danger';
+    setTimeout(() => { message.value = ''; }, 4000);
+  }
 }
 
 async function confirmDeleteEvent(id) {
   if (!confirm('Bạn có chắc muốn xóa sự kiện này?')) return;
-  try { deleting.value = id; await deleteEvent(id); deleting.value = null; await loadEvents(); } catch (err) { deleting.value = null; console.error('Failed to delete event', err); alert('Lỗi khi xóa sự kiện. Xem console để biết chi tiết.'); }
+  try {
+    deleting.value = id;
+    const res = await deleteEvent(id);
+    deleting.value = null;
+    if (res && res.message) {
+      message.value = res.message;
+      messageType.value = 'success';
+    } else {
+      message.value = 'Xóa sự kiện thành công';
+      messageType.value = 'success';
+    }
+    setTimeout(() => { message.value = ''; }, 4000);
+    await loadEvents();
+  } catch (err) {
+    deleting.value = null;
+    console.error('Failed to delete event', err);
+    const msg = err?.response?.data?.message || 'Lỗi khi xóa sự kiện. Xem console để biết chi tiết.';
+    message.value = msg;
+    messageType.value = 'danger';
+    setTimeout(() => { message.value = ''; }, 4000);
+  }
 }
 
 onMounted(async () => { await Promise.all([loadEvents(), loadCategoriesAndVenues()]); });
 </script>
 
-<style scoped></style>
+<style scoped>
+.compact-modal { max-width: 600px; }
+.compact-modal .card-body { padding: 10px; }
+.compact-modal .card-title { font-size: 1rem; margin-bottom: 6px; }
+.compact-modal .form-label { font-size: 0.92rem; margin-bottom: 4px; }
+.compact-modal .form-control, .compact-modal .form-select, .compact-modal textarea { padding: 0.32rem 0.45rem; font-size: 0.92rem; }
+.compact-modal .form-control-plaintext { padding: 0.45rem 0.5rem; background: transparent; border: 1px solid transparent; }
+.compact-preview { max-height:60px; max-width:120px; object-fit:cover; border-radius:6px; }
+.compact-modal .btn-sm { padding: 0.35rem 0.6rem; font-size: 0.86rem; }
+</style>

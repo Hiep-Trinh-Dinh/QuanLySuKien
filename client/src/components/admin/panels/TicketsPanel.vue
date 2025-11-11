@@ -5,6 +5,16 @@
       <div><button class="btn btn-sm btn-primary" @click="openAddTicket">+ Thêm vé</button></div>
     </div>
 
+    <!-- inline response message -->
+    <div v-if="message" class="mt-3">
+      <div :class="['alert', messageType === 'success' ? 'alert-success' : (messageType === 'danger' ? 'alert-danger' : 'alert-info')]" role="alert">
+        <div class="d-flex justify-content-between align-items-start">
+          <div v-html="message"></div>
+          <button type="button" class="btn-close ms-3" aria-label="Close" @click="clearMessage()"></button>
+        </div>
+      </div>
+    </div>
+
     <div class="row mt-3">
       <div class="col-md-4">
         <label class="form-label">Chọn sự kiện</label>
@@ -37,15 +47,16 @@
       <div v-for="(items, type) in groupedByType" :key="type" class="mb-4">
         <h5>{{ type }} ({{ items.length }})</h5>
         <table class="table table-sm table-striped">
-          <thead><tr><th>ID</th><th>Seat</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>ID</th> <th>ID-User</th>  <th>Seat</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
             <tr v-for="t in items" :key="t.id">
               <td>{{ t.id }}</td>
+              <td>{{ t.user_id }}</td>
               <td>{{ t.seat_number }}</td>
               <td>{{ t.price }}</td>
               <td>{{ t.status }}</td>
               <td>
-                <button class="btn btn-sm btn-outline-secondary me-2" @click="openEditTicket(t)">Edit</button>
+                <!-- <button class="btn btn-sm btn-outline-secondary me-2" @click="openEditTicket(t)">Edit</button> -->
                 <button class="btn btn-sm btn-outline-danger" @click="confirmDeleteTicket(t.id)">Delete</button>
               </td>
             </tr>
@@ -91,6 +102,24 @@ const eventsList = ref([]);
 const localShowModal = ref(false);
 const localForm = reactive({ id: null, event_id: null, seat_number: null, Type: 'standard', price: 0 });
 
+// response messaging shown inline in the panel
+const message = ref('');
+const messageType = ref('success'); // 'success' | 'danger' | 'info'
+let messageTimer = null;
+function showMessage(msg, type = 'success', timeout = 5000) {
+  clearMessage();
+  message.value = msg || '';
+  messageType.value = type || 'success';
+  if (timeout > 0) {
+    messageTimer = setTimeout(() => { clearMessage(); }, timeout);
+  }
+}
+function clearMessage() {
+  message.value = '';
+  messageType.value = 'success';
+  if (messageTimer) { clearTimeout(messageTimer); messageTimer = null; }
+}
+
 const selectedEvent = ref(null);
 const typeFilter = ref('');
 const statusFilter = ref('');
@@ -130,16 +159,41 @@ function eventTitle(id) { const e = eventsList.value.find(x => x.id === id); ret
 async function submit() {
   try {
     const payload = { event_id: localForm.event_id, seat_number: localForm.seat_number, Type: localForm.Type, price: Number(localForm.price) };
-    if (localForm.id) await updateTicket(localForm.id, payload);
-    else await createTicket(payload);
+    let res;
+    if (localForm.id) res = await updateTicket(localForm.id, payload);
+    else res = await createTicket(payload);
+
+    // show server response message when available
+    if (res && (res.message || res.msg)) {
+      showMessage(res.message || res.msg, res.ok === false || res.success === false ? 'danger' : 'success');
+    } else {
+      showMessage(localForm.id ? 'Cập nhật vé thành công' : 'Tạo vé thành công', 'success');
+    }
+
     localShowModal.value = false;
     await loadTickets(selectedEvent.value);
-  } catch (err) { console.error('Failed to save ticket', err); alert('Lỗi khi lưu ticket'); }
+  } catch (err) {
+    console.error('Failed to save ticket', err);
+    const serverMsg = err?.response?.data?.message || err?.message || 'Lỗi khi lưu ticket';
+    showMessage(serverMsg, 'danger');
+  }
 }
 
 async function confirmDeleteTicket(id) {
   if (!confirm('Bạn có chắc muốn xóa vé này?')) return;
-  try { await deleteTicket(id); await loadTickets(selectedEvent.value); } catch (err) { console.error(err); alert('Lỗi khi xóa vé'); }
+  try {
+    const res = await deleteTicket(id);
+    if (res && (res.message || res.msg)) {
+      showMessage(res.message || res.msg, res.ok === false || res.success === false ? 'danger' : 'success');
+    } else {
+      showMessage('Xóa vé thành công', 'success');
+    }
+    await loadTickets(selectedEvent.value);
+  } catch (err) {
+    console.error(err);
+    const serverMsg = err?.response?.data?.message || err?.message || 'Lỗi khi xóa vé';
+    showMessage(serverMsg, 'danger');
+  }
 }
 
 function closeModal() { localShowModal.value = false; }

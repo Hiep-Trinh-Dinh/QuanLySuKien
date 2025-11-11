@@ -5,10 +5,12 @@
       <h4>Venues</h4>
       <div><button class="btn btn-sm btn-primary" @click="openAddVenue">+ Thêm địa điểm</button></div>
     </div>
+    <!-- inline message area -->
+    <div v-if="message" :class="`alert alert-${messageType} mt-2`">{{ message }}</div>
     <table class="table table-sm table-striped mt-3">
       <thead><tr><th>ID</th><th>Name</th><th>Address</th><th>Capacity</th><th>Actions</th></tr></thead>
       <tbody>
-        <tr v-for="v in localVenues" :key="v.id"><td>{{v.id}}</td><td>{{v.name}}</td><td>{{v.address}}</td><td>{{v.capacity}}</td><td><button class="btn btn-sm btn-outline-secondary me-2" @click="openEditVenue(v)">Edit</button><button class="btn btn-sm btn-outline-danger" @click="confirmDeleteVenue(v.id)">Delete</button></td></tr>
+  <tr v-for="v in localVenues" :key="v.id"><td>{{v.id}}</td><td>{{v.name}}</td><td>{{v.address}}</td><td>{{v.capacity}}</td><td><button class="btn btn-sm btn-outline-secondary me-2" @click="openEditVenue(v)">Edit</button><button class="btn btn-sm btn-outline-danger" :disabled="deleting===v.id || deleting===String(v.id)" @click="confirmDeleteVenue(v.id)"><span v-if="deleting===v.id || deleting===String(v.id)">Deleting...</span><span v-else>Delete</span></button></td></tr>
       </tbody>
     </table>
 
@@ -36,6 +38,9 @@ import { getVenues, createVenue, updateVenue, deleteVenue } from '../../../scrip
 const localVenues = ref([]);
 const localShowModal = ref(false);
 const localForm = reactive({ id: null, name: '', address: '', description: '', capacity: 0 });
+const message = ref('');
+const messageType = ref('success');
+const deleting = ref(null);
 
 async function loadVenues() {
   try { const res = await getVenues(); localVenues.value = res || res.data || []; } catch (err) { console.error(err); }
@@ -45,9 +50,56 @@ function resetForm() { localForm.id = null; localForm.name = ''; localForm.addre
 function openAddVenue() { resetForm(); localShowModal.value = true; }
 function openEditVenue(v) { localForm.id = v.id; localForm.name = v.name; localForm.address = v.address; localForm.description = v.description; localForm.capacity = v.capacity; localShowModal.value = true; }
 
-async function submit() { try { const payload = { name: localForm.name, address: localForm.address, description: localForm.description, capacity: localForm.capacity }; if (localForm.id) await updateVenue(localForm.id, payload); else await createVenue(payload); localShowModal.value = false; await loadVenues(); } catch (err) { console.error('Failed to save venue', err); alert('Lỗi khi lưu venue'); } }
+async function submit() {
+  try {
+    const payload = { name: localForm.name, address: localForm.address, description: localForm.description, capacity: localForm.capacity };
+    let res;
+    if (localForm.id) res = await updateVenue(localForm.id, payload);
+    else res = await createVenue(payload);
+    // show server message when available
+    if (res && res.message) {
+      message.value = res.message;
+      messageType.value = 'success';
+    } else {
+      message.value = localForm.id ? 'Cập nhật địa điểm thành công' : 'Tạo địa điểm thành công';
+      messageType.value = 'success';
+    }
+    setTimeout(() => { message.value = ''; }, 4000);
+    localShowModal.value = false;
+    await loadVenues();
+  } catch (err) {
+    console.error('Failed to save venue', err);
+    const msg = err?.response?.data?.message || 'Lỗi khi lưu venue';
+    message.value = msg;
+    messageType.value = 'danger';
+    setTimeout(() => { message.value = ''; }, 4000);
+  }
+}
 
-async function confirmDeleteVenue(id) { if (!confirm('Xóa venue?')) return; try { await deleteVenue(id); await loadVenues(); } catch (err) { console.error(err); alert('Lỗi khi xóa venue'); } }
+async function confirmDeleteVenue(id) {
+  if (!confirm('Xóa venue?')) return;
+  try {
+    deleting.value = id;
+    const res = await deleteVenue(id);
+    deleting.value = null;
+    if (res && res.message) {
+      message.value = res.message;
+      messageType.value = 'success';
+    } else {
+      message.value = 'Xóa venue thành công';
+      messageType.value = 'success';
+    }
+    setTimeout(() => { message.value = ''; }, 4000);
+    await loadVenues();
+  } catch (err) {
+    deleting.value = null;
+    console.error(err);
+    const msg = err?.response?.data?.message || 'Lỗi khi xóa venue';
+    message.value = msg;
+    messageType.value = 'danger';
+    setTimeout(() => { message.value = ''; }, 4000);
+  }
+}
 
 function closeModal() { localShowModal.value = false; }
 

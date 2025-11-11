@@ -7,6 +7,9 @@
       </div>
     </div>
 
+    <!-- inline message area -->
+    <div v-if="message" :class="`alert alert-${messageType} mt-2`">{{ message }}</div>
+
     <table class="table table-sm table-striped mt-3">
       <thead>
         <tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Created</th><th>Actions</th></tr>
@@ -54,6 +57,8 @@ import { getUsers, createUser, updateUser, deleteUser } from '../../../scripts/a
 
 const users = ref([]);
 const showUserModal = ref(false);
+const message = ref('');
+const messageType = ref('success');
 const userForm = reactive({ id: null, username: '', email: '', role: 'user', full_name: '', phone: '', password: '' });
 
 function resetUserForm() { userForm.id = null; userForm.username = ''; userForm.email = ''; userForm.role = 'user'; userForm.full_name = ''; userForm.phone = ''; userForm.password = ''; }
@@ -72,16 +77,45 @@ async function saveUser() {
     const payload = { username: userForm.username, email: userForm.email, role: userForm.role, full_name: userForm.full_name, phone: userForm.phone };
     // include password only when admin filled it
     if (userForm.password) payload.password = userForm.password;
-    if (userForm.id) await updateUser(userForm.id, payload);
-    else await createUser(payload);
+    let res;
+    if (userForm.id) res = await updateUser(userForm.id, payload);
+    else res = await createUser(payload);
+    // show server message when available
+    if (res && res.message) {
+      message.value = res.message;
+      messageType.value = 'success';
+    } else {
+      message.value = userForm.id ? 'Cập nhật user thành công' : 'Tạo user thành công';
+      messageType.value = 'success';
+    }
+    setTimeout(() => { message.value = ''; }, 4000);
     showUserModal.value = false;
     await loadUsers();
   } catch (err) { console.error('Failed to save user', err); alert('Lỗi khi lưu user'); }
 }
 
 async function confirmDeleteUser(id) {
-  if (!confirm('Bạn có chắc muốn xóa user này?')) return;
-  try { await deleteUser(id); await loadUsers(); } catch (err) { console.error(err); alert('Lỗi khi xóa user'); }
+  console.log('Deleting user id:', id);
+  if (!confirm('Bạn có chắc muốn xóa user này?'))
+    return;
+  try {
+    const res = await deleteUser(id);
+    if (res && res.message) {
+      message.value = res.message;
+      messageType.value = 'success';
+    } else {
+      message.value = 'Xóa user thành công';
+      messageType.value = 'success';
+    }
+    setTimeout(() => { message.value = ''; }, 3000);
+    await loadUsers();
+  } catch (err) {
+    console.error('Failed to delete user', err);
+    const msg = err?.response?.data?.message || 'Lỗi khi xóa user';
+    message.value = msg;
+    messageType.value = 'danger';
+    setTimeout(() => { message.value = ''; }, 3000);
+  }
 }
 
 onMounted(() => loadUsers());
