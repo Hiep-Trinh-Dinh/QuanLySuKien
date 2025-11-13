@@ -614,8 +614,12 @@ app.post("/purchase-ticket", async (req, res) => {
           // Update từng ticket cho đúng user, giá, status, QR...
           for (let i = 0; i < qty; i++) {
             const id = availableTickets[i].id;
+            // Lấy seat_number cho ticket hiện tại
+            const [[ticketRow]] = await connection.query("SELECT seat_number FROM tickets WHERE id = ?", [id]);
+            const seatNumber = ticketRow?.seat_number;
             const qrPayload = JSON.stringify({
               ticket_id: id,
+              seat_number: seatNumber,
               event_title: eventTitle,
             });
             const qrImage = await QRCode.toDataURL(qrPayload);
@@ -678,8 +682,12 @@ app.post("/purchase-ticket", async (req, res) => {
       const updatedIds = [];
       for (let i = 0; i < quantity; i++) {
         const id = availableTickets[i].id;
+        // Lấy seat_number cho ticket hiện tại
+        const [[ticketRow]] = await connection.query("SELECT seat_number FROM tickets WHERE id = ?", [id]);
+        const seatNumber = ticketRow?.seat_number;
         const qrPayload = JSON.stringify({
           ticket_id: id,
+          seat_number: seatNumber,
           event_title: eventTitle,
         });
         const qrImage = await QRCode.toDataURL(qrPayload);

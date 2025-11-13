@@ -92,7 +92,7 @@ export function useEventReview() {
         // điều hướng sau một chút để user đóng dialog
         setTimeout(() => {
           closeDialog();
-          router.push(`/event-detail/2`);
+          router.push(`/event-detail/${eventId.value}`);
         }, 1000);
       } else {
         openDialog('Đánh giá', 'Có lỗi xảy ra khi gửi đánh giá!');

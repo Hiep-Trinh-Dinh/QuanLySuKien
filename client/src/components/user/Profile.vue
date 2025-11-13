@@ -101,31 +101,6 @@
         </div>
       </div>
     </div>
-
-    <div class="card">
-      <div class="card-body">
-        <h6 class="mb-3">Hoạt động</h6>
-        <ul class="nav nav-tabs mb-3">
-          <li class="nav-item"><button class="nav-link active">Sự kiện đã tạo</button></li>
-          <li class="nav-item"><button class="nav-link">Sự kiện đã kết thúc</button></li>
-          <li class="nav-item"><button class="nav-link">Sự kiện đã lưu</button></li>
-        </ul>
-
-        <table class="table">
-          <thead>
-            <tr><th>Tên sự kiện</th><th>Ngày</th><th>Tiếp cận</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="event in events" :key="event.id">
-              <td>{{ event.title }}</td>
-              <td>{{ event.date }}</td>
-              <td>{{ event.reach }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <button class="btn btn-outline-primary btn-sm">View All Events</button>
-      </div>
-    </div>
   </div>
 </template>
 
